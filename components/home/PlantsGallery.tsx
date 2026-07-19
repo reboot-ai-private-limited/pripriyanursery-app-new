@@ -4,7 +4,10 @@ import { Image } from 'expo-image';
 import { shopApi, GalleryItem } from '@/services/api';
 import { BrandColors } from '@/constants/theme';
 
+import { useTranslation } from 'react-i18next';
+
 export default function PlantsGallery() {
+  const { t } = useTranslation();
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +29,7 @@ export default function PlantsGallery() {
       }
     };
     fetchGallery();
-  }, []);
+  }, [t]);
 
   if (loading) {
     return (
@@ -43,7 +46,7 @@ export default function PlantsGallery() {
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <Text style={styles.title}>Nursery Photo Gallery</Text>
+        <Text style={styles.title}>{t('home.gallery')}</Text>
         <Text style={styles.subtitle}>Glimpse of our mother plants, grafted trees & nursery farms</Text>
       </View>
 

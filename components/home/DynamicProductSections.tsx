@@ -4,7 +4,10 @@ import ProductSection from '@/components/home/ProductSection';
 import PlantsGallery from '@/components/home/PlantsGallery';
 import { shopApi } from '@/services/api';
 
+import { useTranslation } from 'react-i18next';
+
 export default function DynamicProductSections() {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<{ name: string; slug: string }[]>([]);
 
   useEffect(() => {
@@ -33,7 +36,7 @@ export default function DynamicProductSections() {
       }
     };
     fetchCategories();
-  }, []);
+  }, [t]);
 
   const list = categories.length > 0 ? categories : [
     { name: 'Flowering Plants', slug: 'flowering-plants' },

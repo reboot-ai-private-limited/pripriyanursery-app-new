@@ -4,12 +4,15 @@ import ProductCard from '@/components/product/ProductCard';
 import { shopApi, Product, mapProduct } from '@/services/api';
 import { BrandColors } from '@/constants/theme';
 
+import { useTranslation } from 'react-i18next';
+
 interface ProductSectionProps {
   title: string;
   categorySlug: string;
 }
 
 export default function ProductSection({ title, categorySlug }: ProductSectionProps) {
+  const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +36,7 @@ export default function ProductSection({ title, categorySlug }: ProductSectionPr
       }
     };
     fetchProducts();
-  }, [categorySlug]);
+  }, [categorySlug, t]);
 
   return (
     <View style={styles.section}>
@@ -53,7 +56,7 @@ export default function ProductSection({ title, categorySlug }: ProductSectionPr
         </View>
       ) : (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No products available in this category.</Text>
+          <Text style={styles.emptyText}>{t('home.noProducts')}</Text>
         </View>
       )}
     </View>

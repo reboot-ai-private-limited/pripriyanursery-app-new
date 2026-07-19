@@ -4,7 +4,10 @@ import { Image } from 'expo-image';
 import { shopApi, Category } from '@/services/api';
 import { BrandColors } from '@/constants/theme';
 
+import { useTranslation } from 'react-i18next';
+
 export default function CategorySection() {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +29,7 @@ export default function CategorySection() {
       }
     };
     fetchCategories();
-  }, []);
+  }, [t]);
 
   if (loading) {
     return (
@@ -43,7 +46,7 @@ export default function CategorySection() {
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <Text style={styles.sectionTitle}>Shop by Categories</Text>
+        <Text style={styles.sectionTitle}>{t('common.categories')}</Text>
       </View>
       <ScrollView
         horizontal

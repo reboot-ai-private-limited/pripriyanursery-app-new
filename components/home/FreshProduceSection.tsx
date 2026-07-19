@@ -4,7 +4,10 @@ import ProductCard from '@/components/product/ProductCard';
 import { shopApi, Product, mapProduct } from '@/services/api';
 import { BrandColors } from '@/constants/theme';
 
+import { useTranslation } from 'react-i18next';
+
 export default function FreshProduceSection() {
+  const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,13 +31,13 @@ export default function FreshProduceSection() {
       }
     };
     fetchProducts();
-  }, []);
+  }, [t]);
 
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <Text style={styles.title}>Fresh Produce</Text>
-        <Text style={styles.subtitle}>Handpicked healthy grafted plants straight from our nursery</Text>
+        <Text style={styles.title}>{t('home.freshProduceTitle')}</Text>
+        <Text style={styles.subtitle}>{t('home.freshProduceDesc')}</Text>
       </View>
 
       {loading ? (

@@ -38,7 +38,7 @@ export default function CategoryScreen() {
   const renderCategory = ({ item }: { item: Category }) => (
     <TouchableOpacity 
       style={styles.card}
-      onPress={() => router.push(`/products?category=${item._id}`)}
+      onPress={() => router.push(`/products?category=${item._id}` as any)}
     >
       <View style={styles.imageContainer}>
         {item.coverImage?.url ? (

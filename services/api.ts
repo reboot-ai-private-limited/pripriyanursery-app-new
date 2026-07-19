@@ -15,11 +15,14 @@ export const shopApi = axios.create({
   timeout: 15000,
 });
 
+import i18n from './i18n';
+
 shopApi.interceptors.request.use((config) => {
+  const lang = i18n.language || 'en';
   if (config.headers) {
-    config.headers['Accept-Language'] = 'en';
+    config.headers['Accept-Language'] = lang;
   }
-  config.params = { ...config.params, lang: 'en' };
+  config.params = { ...config.params, lang };
   return config;
 });
 

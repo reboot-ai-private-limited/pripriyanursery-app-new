@@ -1,11 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Linking, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { BrandColors } from '@/constants/theme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { FontAwesome5, FontAwesome } from '@expo/vector-icons';
+import { shopApi } from '@/services/api';
+import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 export default function Footer() {
+  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
+  const router = useRouter();
+  const [categories, setCategories] = useState<{ _id: string, name: string }[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await shopApi.get(`/categories`);
+        if (res.data?.data) {
+          setCategories(res.data.data.slice(0, 5)); // Just take first 5 for the footer to match "Category 1"
+        }
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      }
+    };
+    fetchCategories();
+  }, [t]);
 
   const handleLink = (url: string) => {
     Linking.openURL(url).catch((err) => console.error("Couldn't load page", err));
@@ -13,62 +33,110 @@ export default function Footer() {
 
   return (
     <View style={styles.container}>
-      {/* Brand & Description */}
+      {/* ================= Section 1: Brand, Follow Us, Payment Methods ================= */}
       <View style={styles.section}>
         <Image
-          source={require('@/assets/images/logo.svg')}
+          source={require('../../assets/images/logo.svg')}
           style={styles.logo}
           contentFit="contain"
           tintColor="#FFFFFF"
         />
         <Text style={styles.description}>
-          <Text style={styles.boldText}>Pripriya</Text> offers a wide selection of indoor and outdoor plants, gardening tools, and expert advice.
+          <Text style={styles.boldText}>Pri Priya Nursery</Text> {t('footer.description', {defaultValue: 'offers a wide selection of indoor and outdoor plants, gardening tools, and expert advice.'})}
         </Text>
-      </View>
 
-      {/* Follow Us */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Follow With Us</Text>
+        {/* Follow Us */}
+        <Text style={styles.sectionTitle}>{t('footer.followUs')}</Text>
         <View style={styles.socialRow}>
-          <TouchableOpacity style={styles.socialIcon} onPress={() => handleLink('https://facebook.com')}>
-             <Text style={styles.socialText}>FB</Text>
+          <TouchableOpacity onPress={() => handleLink('https://facebook.com')}>
+            <FontAwesome5 name="facebook" size={24} color="rgba(255,255,255,0.6)" style={styles.socialIcon} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialIcon} onPress={() => handleLink('https://instagram.com')}>
-             <Text style={styles.socialText}>IG</Text>
+          <TouchableOpacity onPress={() => handleLink('https://instagram.com')}>
+            <FontAwesome5 name="instagram" size={24} color="rgba(255,255,255,0.6)" style={styles.socialIcon} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialIcon} onPress={() => handleLink('https://twitter.com')}>
-             <Text style={styles.socialText}>X</Text>
+          <TouchableOpacity onPress={() => handleLink('https://google.com')}>
+            <FontAwesome5 name="google" size={24} color="rgba(255,255,255,0.6)" style={styles.socialIcon} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.socialIcon} onPress={() => handleLink('https://youtube.com')}>
-             <Text style={styles.socialText}>YT</Text>
+          <TouchableOpacity onPress={() => handleLink('https://twitter.com')}>
+            <FontAwesome5 name="twitter" size={24} color="rgba(255,255,255,0.6)" style={styles.socialIcon} />
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleLink('https://youtube.com')}>
+            <FontAwesome5 name="youtube" size={24} color="rgba(255,255,255,0.6)" style={styles.socialIcon} />
+          </TouchableOpacity>
+        </View>
+
+        {/* We Accepted */}
+        <Text style={styles.sectionTitle}>{t('footer.weAccepted')}</Text>
+        <View style={styles.paymentRow}>
+          <View style={styles.paymentBox}>
+            <Image source={require('../../assets/icons/visa.svg')} style={styles.paymentImg} contentFit="contain" />
+          </View>
+          <View style={styles.paymentBox}>
+            <Image source={require('../../assets/icons/mastercrd.svg')} style={styles.paymentImg} contentFit="contain" />
+          </View>
+          <View style={styles.paymentBox}>
+            <Image source={require('../../assets/icons/rupay.svg')} style={styles.paymentImg} contentFit="contain" />
+          </View>
+          <View style={styles.paymentBox}>
+            <Image source={require('../../assets/icons/upi.svg')} style={styles.paymentImg} contentFit="contain" />
+          </View>
         </View>
       </View>
 
-      {/* Quick Links */}
+      {/* ================= Section 2: Categories ================= */}
+      {categories.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('common.categories')}</Text>
+          {categories.map((cat, idx) => (
+            <TouchableOpacity 
+              key={cat._id || idx.toString()} 
+              style={styles.linkItem}
+              onPress={() => router.push(`/products?category=${cat._id}` as any)}
+            >
+              <Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {cat.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+      {/* ================= Section 3: Quick Links ================= */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Links</Text>
-        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}>&gt; Terms & Conditions</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}>&gt; Privacy Policy</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}>&gt; Refund Policy</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}>&gt; Shipping Policy</Text></TouchableOpacity>
+        <Text style={styles.sectionTitle}>{t('footer.quickLinks')}</Text>
+        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.terms')}</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.privacy')}</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.refund')}</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.shipping')}</Text></TouchableOpacity>
       </View>
 
-      {/* Contact Info */}
+      {/* ================= Section 4: Contact Info ================= */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Contact</Text>
+        <Text style={styles.sectionTitle}>{t('footer.contactInfo', {defaultValue: 'Contact Information'})}</Text>
+        
         <View style={styles.contactItem}>
-          <Text style={styles.contactText}>contact@pripriya.com</Text>
+          <FontAwesome5 name="map-marker-alt" size={16} color="rgba(255,255,255,0.6)" />
+          <Text style={styles.contactText}>{t('footer.address', {defaultValue: 'A112, 1st Floor, Pripriya IT Park, Sector 62, Noida, UP 201309'})}</Text>
         </View>
+        
         <View style={styles.contactItem}>
-          <Text style={styles.contactText}>+91 9876543210</Text>
+          <FontAwesome5 name="envelope" size={16} color="rgba(255,255,255,0.6)" />
+          <Text style={styles.contactText}>support@pripriya.com</Text>
+        </View>
+        
+        <View style={styles.contactItem}>
+          <FontAwesome5 name="phone-alt" size={16} color="rgba(255,255,255,0.6)" />
+          <Text style={styles.contactText}>+91 1234567890</Text>
+        </View>
+
+        <View style={styles.contactItem}>
+          <FontAwesome5 name="whatsapp" size={18} color="rgba(255,255,255,0.6)" />
+          <Text style={styles.contactText}>+91 1234567890</Text>
         </View>
       </View>
 
-      {/* Copyright */}
+      {/* ================= Copyright ================= */}
       <View style={styles.copyrightBorder}>
         <Text style={styles.copyrightText}>
-          © {currentYear} Pripriya. All rights reserved.
+          {t('footer.copyright', {defaultValue: `© ${currentYear} Pri Priya Nursery. All Rights Reserved.`})}
         </Text>
       </View>
     </View>
@@ -77,7 +145,7 @@ export default function Footer() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#0B150F', // Dark color similar to web
+    backgroundColor: '#0B150F',
     borderTopLeftRadius: 60,
     borderTopRightRadius: 60,
     borderTopWidth: 6,
@@ -96,9 +164,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   description: {
-    color: '#9CA3AF',
+    color: 'rgba(255,255,255,0.6)',
     fontSize: 14,
     lineHeight: 22,
+    marginBottom: 24,
   },
   boldText: {
     fontWeight: '700',
@@ -106,52 +175,67 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '600',
     color: '#FFFFFF',
     marginBottom: 16,
   },
   socialRow: {
     flexDirection: 'row',
     gap: 16,
+    marginBottom: 24,
   },
   socialIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#1F2937',
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginRight: 8,
   },
-  socialText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 12,
+  paymentRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  paymentBox: {
+    width: 60,
+    height: 40,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 6,
+  },
+  paymentImg: {
+    width: '100%',
+    height: '100%',
   },
   linkItem: {
     marginBottom: 12,
   },
   linkText: {
-    color: '#9CA3AF',
-    fontSize: 15,
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 16,
+  },
+  chevron: {
+    color: 'rgba(255,255,255,0.6)',
+    fontWeight: '700',
   },
   contactItem: {
-    marginBottom: 12,
+    marginBottom: 16,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    gap: 12,
   },
   contactText: {
-    color: '#9CA3AF',
+    color: 'rgba(255,255,255,0.6)',
     fontSize: 15,
+    flex: 1,
+    lineHeight: 22,
   },
   copyrightBorder: {
     borderTopWidth: 1,
     borderTopColor: '#1F2937',
-    paddingTop: 20,
+    paddingTop: 24,
     marginTop: 10,
     alignItems: 'center',
   },
   copyrightText: {
-    color: '#6B7280',
+    color: 'rgba(255,255,255,0.4)',
     fontSize: 13,
   },
 });

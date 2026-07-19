@@ -13,7 +13,16 @@ interface ProductCardProps {
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 32 - 12) / 2;
 
+import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { getLabels, formatNumberByLang } from '@/services/localization';
+
 export default function ProductCard({ product, onPress }: ProductCardProps) {
+  const router = useRouter();
+  const { i18n } = useTranslation();
+  const lang = i18n.language || 'en';
+  const labels = getLabels(lang);
+
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [cartQty, setCartQty] = useState(0);
 
@@ -45,7 +54,7 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
     <TouchableOpacity
       style={[styles.card, { width: CARD_WIDTH }]}
       activeOpacity={0.9}
-      onPress={onPress}
+      onPress={onPress || (() => router.push(`/product/${product.slug}` as any))}
     >
       {/* Product Image Wrapper with Floating Wishlist Button */}
       <View style={styles.imageWrapper}>
@@ -77,11 +86,11 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
         </Text>
 
         <View style={styles.priceRow}>
-          <Text style={styles.price}>₹{price}</Text>
+          <Text style={styles.price}>₹{formatNumberByLang(price, lang)}</Text>
           {mrp > price && (
             <>
-              <Text style={styles.mrp}>₹{mrp}</Text>
-              <Text style={styles.discount}>{discount}% OFF</Text>
+              <Text style={styles.mrp}>₹{formatNumberByLang(mrp, lang)}</Text>
+              <Text style={styles.discount}>{formatNumberByLang(discount, lang)}{labels.off}</Text>
             </>
           )}
         </View>
@@ -90,14 +99,14 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
         <View style={styles.actionsRow}>
           {stock <= 0 ? (
             <View style={styles.outOfStockBadge}>
-              <Text style={styles.outOfStockText}>OUT OF STOCK</Text>
+              <Text style={styles.outOfStockText}>{labels.outOfStock}</Text>
             </View>
           ) : cartQty > 0 ? (
             <View style={styles.stepperContainer}>
               <TouchableOpacity onPress={decrementQty} style={styles.stepperBtn}>
                 <Text style={styles.stepperSymbol}>-</Text>
               </TouchableOpacity>
-              <Text style={styles.qtyText}>{cartQty}</Text>
+              <Text style={styles.qtyText}>{formatNumberByLang(cartQty, lang)}</Text>
               <TouchableOpacity onPress={incrementQty} style={styles.stepperBtn}>
                 <Text style={styles.stepperSymbol}>+</Text>
               </TouchableOpacity>
@@ -109,7 +118,7 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
               activeOpacity={0.8}
             >
               <IconSymbol name="cart.fill" size={14} color={BrandColors.primary} />
-              <Text style={styles.addToCartText}>Add to Cart</Text>
+              <Text style={styles.addToCartText}>{labels.addToCart}</Text>
             </TouchableOpacity>
           )}
         </View>

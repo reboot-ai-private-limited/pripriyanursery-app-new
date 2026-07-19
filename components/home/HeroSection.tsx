@@ -4,9 +4,12 @@ import { Image } from 'expo-image';
 import { shopApi, Banner } from '@/services/api';
 import { BrandColors } from '@/constants/theme';
 
+import { useTranslation } from 'react-i18next';
+
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function HeroSection() {
+  const { t } = useTranslation();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -31,7 +34,7 @@ export default function HeroSection() {
       }
     };
     fetchBanners();
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (banners.length <= 1) return;

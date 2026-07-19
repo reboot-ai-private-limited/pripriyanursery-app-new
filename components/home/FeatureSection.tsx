@@ -10,15 +10,19 @@ interface Feature {
   iconName: string;
 }
 
-const FEATURES: Feature[] = [
-  { id: '1', title: 'Free Shipping', description: 'Fast delivery across India on orders over ₹999', iconName: 'paperplane.fill' },
-  { id: '2', title: 'Quality Tested', description: '100% healthy, pest-free & verified nursery plants', iconName: 'checkmark.shield.fill' },
-  { id: '3', title: 'Original Grafted', description: 'Authentic fruit & flowering varieties guaranteed', iconName: 'leaf.fill' },
-  { id: '4', title: 'WhatsApp Support', description: 'Direct gardening & plant care advice from experts', iconName: 'message.fill' },
-  { id: '5', title: 'Fresh from Nursery', description: 'Handpicked fresh right before securely packing', iconName: 'sun.max.fill' },
-];
+import { useTranslation } from 'react-i18next';
 
 export default function FeatureSection() {
+  const { t } = useTranslation();
+  
+  const FEATURES = [
+    { id: '1', title: t('home.features.shippingTitle'), description: t('home.features.shippingDesc'), iconName: 'paperplane.fill' },
+    { id: '2', title: t('home.features.qualityTitle'), description: t('home.features.qualityDesc'), iconName: 'checkmark.shield.fill' },
+    { id: '3', title: t('home.features.originalTitle'), description: t('home.features.originalDesc'), iconName: 'leaf.fill' },
+    { id: '4', title: t('home.features.supportTitle'), description: t('home.features.supportDesc'), iconName: 'message.fill' },
+    { id: '5', title: t('home.features.tipsTitle'), description: t('home.features.tipsDesc'), iconName: 'sun.max.fill' },
+  ];
+
   return (
     <View style={styles.section}>
       <ScrollView
