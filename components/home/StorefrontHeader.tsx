@@ -46,17 +46,10 @@ export default function StorefrontHeader() {
               <Text style={styles.langText}>{currentLang}</Text>
             </TouchableOpacity>
 
-            {/* Wishlist */}
-            <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7}>
-              <IconSymbol name="heart" size={22} color={BrandColors.dark} />
-            </TouchableOpacity>
-
-            {/* Cart with Badge */}
-            <TouchableOpacity style={styles.iconBtn} activeOpacity={0.7}>
-              <IconSymbol name="cart.fill" size={22} color={BrandColors.primary} />
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>2</Text>
-              </View>
+            {/* Account / Login */}
+            <TouchableOpacity style={styles.loginBtn} activeOpacity={0.7}>
+              <IconSymbol name="person.crop.circle.fill" size={16} color={BrandColors.primary} />
+              <Text style={styles.loginText}>{t('common.login', {defaultValue: 'Login'})}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -158,34 +151,21 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: BrandColors.primary,
   },
-  iconBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: BrandColors.surface,
-    justifyContent: 'center',
+  loginBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
-    position: 'relative',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: BrandColors.lightGreen,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
+    borderColor: '#C1E8CC',
   },
-  badge: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    backgroundColor: BrandColors.secondary,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-  },
-  badgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: BrandColors.dark,
+  loginText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: BrandColors.primary,
   },
   searchContainer: {
     flexDirection: 'row',

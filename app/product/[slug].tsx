@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { getLabels, formatNumberByLang, translateAttribute } from '@/services/localization';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useWishlist } from '@/contexts/WishlistContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -110,6 +111,15 @@ export default function ProductDetailsScreen() {
   // Strip HTML from desc
   const cleanDesc = product.desc ? product.desc.replace(/<[^>]+>/g, '').trim() : '';
 
+  const { isInWishlist, toggleWishlist } = useWishlist();
+
+  // Determine if this specific product is wishlisted
+  const isWishlisted = product ? isInWishlist(product._id) : false;
+
+  const handleToggleWishlist = () => {
+    if (product) toggleWishlist(product);
+  };
+
   const handleAddToCart = () => setCartQty(1);
   const incrementQty = () => setCartQty(prev => prev + 1);
   const decrementQty = () => setCartQty(prev => Math.max(0, prev - 1));
@@ -156,8 +166,12 @@ export default function ProductDetailsScreen() {
             </View>
           )}
 
-          <TouchableOpacity style={styles.wishlistBtn}>
-            <IconSymbol name="heart" size={22} color="#4B5563" />
+          <TouchableOpacity style={styles.wishlistBtn} onPress={handleToggleWishlist}>
+            <IconSymbol 
+              name={isWishlisted ? 'heart.fill' : 'heart'} 
+              size={22} 
+              color={isWishlisted ? BrandColors.red : '#4B5563'} 
+            />
           </TouchableOpacity>
         </View>
 

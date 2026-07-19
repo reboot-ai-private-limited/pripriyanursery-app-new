@@ -16,26 +16,28 @@ const CARD_WIDTH = (SCREEN_WIDTH - 32 - 12) / 2;
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { getLabels, formatNumberByLang } from '@/services/localization';
+import { useWishlist } from '@/contexts/WishlistContext';
 
 export default function ProductCard({ product, onPress }: ProductCardProps) {
   const router = useRouter();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'en';
   const labels = getLabels(lang);
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const isWishlisted = isInWishlist(product._id || product.id);
   const [cartQty, setCartQty] = useState(0);
 
-  const title = product.title || 'Exotic Nursery Plant';
+  const title = product.title || (product as any).name || 'Exotic Nursery Plant';
   const price = product.price || 0;
   const mrp = product.mrp || price;
   const discount = product.discount || (mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0);
   const stock = product.stock !== undefined ? product.stock : (product.stocks || 0);
   
-  const imgSource = product.image || product.imageUrl || 'https://via.placeholder.com/400x400.png?text=No+Image';
+  const imgSource = product.image || (product as any).coverImage?.url || product.imageUrl || 'https://via.placeholder.com/400x400.png?text=No+Image';
 
-  const toggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
+  const handleToggleWishlist = () => {
+    toggleWishlist(product);
   };
 
   const handleAddToCart = () => {
@@ -68,7 +70,7 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
         {/* Heart Wishlist Button - Solid opaque white background (#FFFFFF) */}
         <TouchableOpacity
           style={styles.wishlistBtn}
-          onPress={toggleWishlist}
+          onPress={handleToggleWishlist}
           activeOpacity={0.1}
         >
           <IconSymbol

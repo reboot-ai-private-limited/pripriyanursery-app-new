@@ -24,6 +24,9 @@ const MAPPING: Record<string, ComponentProps<typeof MaterialIcons>['name']> = {
   'message.fill': 'chat',
   'sun.max.fill': 'wb-sunny',
   'play.fill': 'play-arrow',
+  'list.bullet': 'category',
+  'person.crop.circle.fill': 'account-circle',
+  'chevron.left': 'chevron-left',
 };
 
 /**
