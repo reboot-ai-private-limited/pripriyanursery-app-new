@@ -65,8 +65,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: t('common.profile', {defaultValue: 'Profile'}),
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="person.crop.circle.fill" color={color} />,
+          href: null,
         }}
       />
     </Tabs>

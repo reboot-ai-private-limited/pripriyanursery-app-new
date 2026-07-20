@@ -1,81 +1,171 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Modal, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { BrandColors } from '@/constants/theme';
-import { shopApi } from '@/services/api';
-
-interface Category {
-  _id: string;
-  name: string;
-  desc: string;
-  coverImage?: { url: string };
-  icon?: { url: string };
-}
+import { shopApi, Category, Product, mapProduct } from '@/services/api';
+import ProductCard from '@/components/product/ProductCard';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useTranslation } from 'react-i18next';
 
 export default function CategoryScreen() {
   const router = useRouter();
+  const { category: categoryParam } = useLocalSearchParams<{ category: string }>();
+  const { t } = useTranslation();
+
   const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const [selectedCategory, setSelectedCategory] = useState<string>(categoryParam || 'all');
+  const [sortBy, setSortBy] = useState<string>('popularity');
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [categoryParam]);
 
-  const fetchCategories = async () => {
+  useEffect(() => {
+    fetchData();
+  }, [selectedCategory, sortBy]);
+
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await shopApi.get('/categories');
-      if (res.data?.data) {
-        setCategories(res.data.data);
+      
+      let currentCategories = categories;
+      if (currentCategories.length === 0) {
+        const catRes = await shopApi.get('/categories');
+        if (catRes.data?.data) {
+          currentCategories = [{ _id: 'all', name: 'All Products', slug: 'all' } as Category, ...catRes.data.data];
+          setCategories(currentCategories);
+        }
       }
+
+      let url = '/products?limit=100';
+      if (selectedCategory && selectedCategory !== 'all') {
+        const cat = currentCategories.find(c => c._id === selectedCategory);
+        const slug = cat ? cat.slug : selectedCategory; 
+        url = `/products/category/${slug}?limit=100`;
+      }
+      
+      const prodRes = await shopApi.get(url).catch(() => ({ data: { data: {} } }));
+      const rawData = prodRes.data?.data || {};
+      const rawList = Array.isArray(rawData) ? rawData : (rawData.products || prodRes.data?.products || []);
+      
+      let prods = Array.isArray(rawList) 
+        ? rawList.map(mapProduct)
+        : [];
+      
+      if (sortBy === 'price-asc') prods.sort((a: Product, b: Product) => a.price - b.price);
+      if (sortBy === 'price-desc') prods.sort((a: Product, b: Product) => b.price - a.price);
+
+      setProducts(prods);
     } catch (err) {
-      console.error('Failed to fetch categories:', err);
+      console.error('Failed to fetch data:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const renderCategory = ({ item }: { item: Category }) => (
-    <TouchableOpacity 
-      style={styles.card}
-      onPress={() => router.push(`/products?category=${item._id}` as any)}
-    >
-      <View style={styles.imageContainer}>
-        {item.coverImage?.url ? (
-          <Image source={{ uri: item.coverImage.url }} style={styles.image} />
-        ) : (
-          <View style={styles.placeholder} />
-        )}
-      </View>
-      <View style={styles.content}>
-        <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.desc} numberOfLines={2}>{item.desc || 'Explore products in this category'}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderCategory = ({ item }: { item: Category }) => {
+    const isSelected = selectedCategory === item._id;
+    return (
+      <TouchableOpacity 
+        style={[styles.catCard, isSelected && styles.catCardSelected]}
+        onPress={() => setSelectedCategory(item._id)}
+        activeOpacity={0.8}
+      >
+        <View style={[styles.catImageContainer, isSelected && styles.catImageContainerSelected]}>
+          {item.coverImage?.url || item.imageUrl || item.image ? (
+            <Image source={{ uri: (item.coverImage?.url || item.imageUrl || item.image || '') as string }} style={styles.catImage} />
+          ) : (
+            <View style={styles.placeholder}>
+              <Text style={styles.placeholderText}>{item.name?.slice(0, 2).toUpperCase()}</Text>
+            </View>
+          )}
+        </View>
+        <Text style={[styles.catName, isSelected && styles.catNameSelected]} numberOfLines={2}>
+          {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>All Categories</Text>
+        <Text style={styles.title}>{t('common.products', {defaultValue: 'Products'})}</Text>
+        <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModalVisible(true)}>
+          <IconSymbol name="line.3.horizontal.decrease.circle" size={24} color={BrandColors.primary} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.categoriesWrapper}>
+        <FlatList
+          data={categories}
+          keyExtractor={(item) => item._id}
+          renderItem={renderCategory}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.catListContainer}
+        />
       </View>
 
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={BrandColors.primary} />
         </View>
+      ) : products.length === 0 ? (
+        <View style={styles.center}>
+          <IconSymbol name="leaf.fill" size={48} color="#D1D5DB" />
+          <Text style={styles.emptyText}>No products found.</Text>
+        </View>
       ) : (
         <FlatList
-          data={categories}
-          keyExtractor={(item) => item._id}
-          renderItem={renderCategory}
-          contentContainerStyle={styles.listContainer}
+          data={products}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <ProductCard product={item} />}
           numColumns={2}
-          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.prodListContainer}
+          columnWrapperStyle={styles.prodRow}
           showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+
+      <Modal visible={filterModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Sort By</Text>
+            
+            {['popularity', 'price-asc', 'price-desc'].map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={[styles.modalOption, sortBy === option && styles.modalOptionSelected]}
+                onPress={() => {
+                  setSortBy(option);
+                  setFilterModalVisible(false);
+                }}
+              >
+                <Text style={[styles.modalOptionText, sortBy === option && styles.modalOptionTextSelected]}>
+                  {option === 'popularity' ? 'Popularity' : option === 'price-asc' ? 'Price: Low to High' : 'Price: High to Low'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity 
+              style={styles.closeBtn}
+              onPress={() => setFilterModalVisible(false)}
+            >
+              <Text style={styles.closeBtnText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 }
 
@@ -85,8 +175,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   header: {
-    paddingTop: 60,
-    paddingBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 16,
     paddingHorizontal: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
@@ -97,38 +189,41 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#111827',
   },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  filterBtn: {
+    padding: 8,
+    backgroundColor: BrandColors.surface,
+    borderRadius: 8,
   },
-  listContainer: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  row: {
-    justifyContent: 'space-between',
-  },
-  card: {
-    width: '48%',
+  categoriesWrapper: {
     backgroundColor: '#FFFFFF',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  catListContainer: {
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  catCard: {
+    alignItems: 'center',
+    width: 72,
+  },
+  catCardSelected: {},
+  catImageContainer: {
+    width: 64,
+    height: 64,
     borderRadius: 16,
-    marginBottom: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-  },
-  imageContainer: {
-    width: '100%',
-    height: 120,
     backgroundColor: '#F3F4F6',
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    overflow: 'hidden',
+    marginBottom: 6,
   },
-  image: {
+  catImageContainerSelected: {
+    borderColor: BrandColors.primary,
+    backgroundColor: BrandColors.lightGreen,
+  },
+  catImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
@@ -136,20 +231,90 @@ const styles = StyleSheet.create({
   placeholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#C1E8CC',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  content: {
-    padding: 12,
+  placeholderText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#34A853',
   },
-  name: {
+  catName: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#6B7280',
+    textAlign: 'center',
+  },
+  catNameSelected: {
+    color: BrandColors.primary,
+    fontWeight: '800',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#9CA3AF',
+  },
+  prodListContainer: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  prodRow: {
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#111827',
+    marginBottom: 16,
+  },
+  modalOption: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  modalOptionSelected: {
+    backgroundColor: BrandColors.surface,
+    borderRadius: 8,
+    borderBottomWidth: 0,
+    paddingHorizontal: 12,
+  },
+  modalOptionText: {
+    fontSize: 16,
+    color: '#4B5563',
+    fontWeight: '500',
+  },
+  modalOptionTextSelected: {
+    color: BrandColors.primary,
+    fontWeight: '700',
+  },
+  closeBtn: {
+    marginTop: 24,
+    paddingVertical: 16,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  closeBtnText: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  desc: {
-    fontSize: 12,
-    color: '#6B7280',
-    lineHeight: 16,
+    color: '#4B5563',
   },
 });

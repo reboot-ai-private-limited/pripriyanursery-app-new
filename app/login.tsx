@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { shopApi } from '@/services/api';
 import { BrandColors } from '@/constants/theme';
@@ -41,8 +42,8 @@ export default function LoginScreen() {
       setLoading(true);
       const res = await shopApi.post('/auth/login/verify', { phone, otp });
       if (res.data?.success && res.data?.data) {
-        const { token, user } = res.data.data;
-        await login(token, user);
+        const { accessToken, user } = res.data.data;
+        await login(accessToken, user);
         router.back();
       } else {
         throw new Error('Invalid response');

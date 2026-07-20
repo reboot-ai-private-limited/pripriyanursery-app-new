@@ -27,6 +27,7 @@ const MAPPING: Record<string, ComponentProps<typeof MaterialIcons>['name']> = {
   'list.bullet': 'category',
   'person.crop.circle.fill': 'account-circle',
   'chevron.left': 'chevron-left',
+  'line.3.horizontal.decrease.circle': 'filter-list',
 };
 
 /**
