@@ -61,6 +61,14 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="cart.fill" color={color} />,
         }}
       />
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: t('common.profile', {defaultValue: 'Profile'}),
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="person.crop.circle.fill" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }

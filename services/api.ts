@@ -17,10 +17,19 @@ export const shopApi = axios.create({
 
 import i18n from './i18n';
 
-shopApi.interceptors.request.use((config) => {
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+shopApi.interceptors.request.use(async (config) => {
   const lang = i18n.language || 'en';
   if (config.headers) {
     config.headers['Accept-Language'] = lang;
+    
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (err) {}
   }
   config.params = { ...config.params, lang };
   return config;

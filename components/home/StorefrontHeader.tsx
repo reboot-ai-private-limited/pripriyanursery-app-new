@@ -1,24 +1,37 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, Platform, StatusBar, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, Platform, StatusBar, Modal, Pressable, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BrandColors } from '@/constants/theme';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function StorefrontHeader() {
   const { t, i18n } = useTranslation();
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+  
   const [searchQuery, setSearchQuery] = useState('');
   
   const currentLang = (i18n.language || 'en').toUpperCase();
   const [langModalVisible, setLangModalVisible] = useState(false);
 
+  const [isGlobalLoading, setIsGlobalLoading] = useState(false);
+
   const selectLang = async (lang: 'EN' | 'BN' | 'HI') => {
+    setIsGlobalLoading(true);
     const langCode = lang.toLowerCase();
     await AsyncStorage.setItem('userLang', langCode);
     i18n.changeLanguage(langCode);
     setLangModalVisible(false);
+    
+    // Simulate loading to reflect website's UX
+    setTimeout(() => {
+      setIsGlobalLoading(false);
+    }, 1500);
   };
 
   return (
@@ -47,9 +60,21 @@ export default function StorefrontHeader() {
             </TouchableOpacity>
 
             {/* Account / Login */}
-            <TouchableOpacity style={styles.loginBtn} activeOpacity={0.7}>
+            <TouchableOpacity 
+              style={styles.loginBtn} 
+              activeOpacity={0.7}
+              onPress={() => {
+                if (isAuthenticated) {
+                  router.push('/(tabs)/profile'); // Assuming profile tab exists or will exist
+                } else {
+                  router.push('/login');
+                }
+              }}
+            >
               <IconSymbol name="person.crop.circle.fill" size={16} color={BrandColors.primary} />
-              <Text style={styles.loginText}>{t('common.login', {defaultValue: 'Login'})}</Text>
+              <Text style={styles.loginText}>
+                {isAuthenticated && user?.name ? user.name.split(' ')[0] : t('common.login', {defaultValue: 'Login'})}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -100,6 +125,20 @@ export default function StorefrontHeader() {
             </TouchableOpacity>
           </View>
         </Pressable>
+      </Modal>
+
+      {/* Global Loading Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isGlobalLoading}
+        onRequestClose={() => {}}
+      >
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={BrandColors.primary} />
+          <Text style={styles.loadingTitle}>Changing language...</Text>
+          <Text style={styles.loadingSubtitle}>Please wait a moment</Text>
+        </View>
       </Modal>
     </SafeAreaView>
   );
@@ -226,5 +265,22 @@ const styles = StyleSheet.create({
   },
   langOptionTextActive: {
     color: BrandColors.primary,
+  },
+  loadingOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: BrandColors.dark,
+    marginTop: 16,
+    marginBottom: 4,
+  },
+  loadingSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
   }
 });

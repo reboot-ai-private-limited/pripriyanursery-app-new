@@ -10,6 +10,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { getLabels, formatNumberByLang, translateAttribute } from '@/services/localization';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useCart } from '@/contexts/CartContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -23,12 +24,14 @@ export default function ProductDetailsScreen() {
   
   // Call hooks before any early returns!
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
+  const [isVariantLoading, setIsVariantLoading] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const { addToCart, updateQuantity, removeFromCart, getCartItemQty } = useCart();
 
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [cartQty, setCartQty] = useState(0);
-  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
 
   useEffect(() => {
     if (!slug) return;
@@ -121,13 +124,36 @@ export default function ProductDetailsScreen() {
     if (product) toggleWishlist(product);
   };
 
-  const handleAddToCart = () => setCartQty(1);
-  const incrementQty = () => setCartQty(prev => prev + 1);
-  const decrementQty = () => setCartQty(prev => Math.max(0, prev - 1));
+  const productId = product?._id || product?.id;
+  const cartItemId = selectedVariantIndex !== undefined ? `${productId}-${selectedVariantIndex}` : productId;
+  const currentCartQty = getCartItemQty(productId, selectedVariantIndex);
+
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product, 1, selectedVariantIndex);
+    }
+  };
+  
+  const incrementQty = () => {
+    updateQuantity(cartItemId, currentCartQty + 1);
+  };
+  
+  const decrementQty = () => {
+    if (currentCartQty > 1) {
+      updateQuantity(cartItemId, currentCartQty - 1);
+    } else {
+      removeFromCart(cartItemId);
+    }
+  };
 
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
+      {isVariantLoading && (
+        <View style={styles.variantLoadingOverlay}>
+          <ActivityIndicator size="large" color={BrandColors.primary} />
+        </View>
+      )}
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity style={styles.headerIcon} onPress={() => router.back()}>
@@ -139,7 +165,7 @@ export default function ProductDetailsScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView ref={scrollViewRef} style={styles.scrollArea} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Image Gallery */}
         <View style={styles.galleryContainer}>
           <ScrollView 
@@ -208,7 +234,14 @@ export default function ProductDetailsScreen() {
                     <TouchableOpacity 
                       key={v._id || idx} 
                       style={[styles.variantCard, isActive && styles.variantCardActive]}
-                      onPress={() => setSelectedVariantIndex(idx)}
+                      onPress={() => {
+                        setIsVariantLoading(true);
+                        setSelectedVariantIndex(idx);
+                        setTimeout(() => {
+                          setIsVariantLoading(false);
+                          scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                        }, 500);
+                      }}
                       activeOpacity={0.8}
                     >
                       <Image source={{ uri: vImg }} style={styles.variantImage} />
@@ -267,10 +300,10 @@ export default function ProductDetailsScreen() {
           </View>
         ) : (
           <View style={styles.actionRow}>
-            {cartQty > 0 ? (
+            {currentCartQty > 0 ? (
               <View style={styles.stepperBox}>
                 <TouchableOpacity onPress={decrementQty} style={styles.stepBtn}><Text style={styles.stepText}>-</Text></TouchableOpacity>
-                <Text style={styles.stepQty}>{formatNumberByLang(cartQty, lang)}</Text>
+                <Text style={styles.stepQty}>{formatNumberByLang(currentCartQty, lang)}</Text>
                 <TouchableOpacity onPress={incrementQty} style={styles.stepBtn}><Text style={styles.stepText}>+</Text></TouchableOpacity>
               </View>
             ) : (
@@ -293,6 +326,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+  },
+  variantLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    zIndex: 9999,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   centered: {
     justifyContent: 'center',
@@ -586,14 +630,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: BrandColors.primary,
-    marginBottom: 16,
+    marginBottom: 8,
     marginTop: -8,
   },
   outOfStockTextBadge: {
     color: BrandColors.red,
   },
   variantsContainer: {
-    marginBottom: 24,
+    marginBottom: 12,
   },
   variantsScroll: {
     gap: 12,
