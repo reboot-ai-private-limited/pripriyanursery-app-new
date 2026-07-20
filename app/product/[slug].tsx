@@ -20,6 +20,9 @@ export default function ProductDetailsScreen() {
   const insets = useSafeAreaInsets();
   const lang = i18n.language || 'en';
   const labels = getLabels(lang);
+  
+  // Call hooks before any early returns!
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -111,10 +114,8 @@ export default function ProductDetailsScreen() {
   // Strip HTML from desc
   const cleanDesc = product.desc ? product.desc.replace(/<[^>]+>/g, '').trim() : '';
 
-  const { isInWishlist, toggleWishlist } = useWishlist();
-
   // Determine if this specific product is wishlisted
-  const isWishlisted = product ? isInWishlist(product._id) : false;
+  const isWishlisted = product ? isInWishlist(product._id || product.id) : false;
 
   const handleToggleWishlist = () => {
     if (product) toggleWishlist(product);
@@ -198,7 +199,7 @@ export default function ProductDetailsScreen() {
           {/* Variants Selector */}
           {Array.isArray(product.variants) && product.variants.length > 0 && (
             <View style={styles.variantsContainer}>
-              <Text style={styles.sectionTitle}>{labels.variants || 'Variants'}</Text>
+              <Text style={styles.sectionTitle}>{labels.chooseVariant || 'Choose Variant'}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.variantsScroll}>
                 {product.variants.map((v: any, idx: number) => {
                   const isActive = idx === selectedVariantIndex;
