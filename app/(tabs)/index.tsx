@@ -5,7 +5,6 @@ import HeroSection from '@/components/home/HeroSection';
 import CategorySection from '@/components/home/CategorySection';
 import FreshProduceSection from '@/components/home/FreshProduceSection';
 import DynamicProductSections from '@/components/home/DynamicProductSections';
-import VideoGallerySection from '@/components/home/VideoGallerySection';
 import FeatureSection from '@/components/home/FeatureSection';
 import Footer from '@/components/layout/Footer';
 import { BrandColors } from '@/constants/theme';
@@ -31,13 +30,10 @@ export default function HomeScreen() {
         {/* 3. Fresh Produce Product Grid */}
         <FreshProduceSection />
 
-        {/* 4. Dynamic Product Sections (Best Sellers / Categories + Photo Gallery) */}
+        {/* 4. Dynamic Product Sections (Best Sellers / Categories + Galleries) */}
         <DynamicProductSections />
 
-        {/* 5. Video Showcase Gallery */}
-        <VideoGallerySection />
-
-        {/* 6. Why Choose Us Trust Badges */}
+        {/* 5. Why Choose Us Trust Badges */}
         <FeatureSection />
         
         {/* Footer */}

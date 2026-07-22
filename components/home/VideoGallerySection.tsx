@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Linking, Modal, Pressable } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Linking, Modal, Pressable } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { Image } from 'expo-image';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -34,6 +34,35 @@ export default function VideoGallerySection() {
     fetchVideos();
   }, [t]);
 
+  const flatListRef = useRef<FlatList>(null);
+  const currentIdxRef = useRef(0);
+  
+  const extendedVideos = videos.length > 1 ? [...videos, ...videos, ...videos] : videos;
+
+  useEffect(() => {
+    if (videos.length <= 1) return;
+    
+    currentIdxRef.current = videos.length;
+    setTimeout(() => {
+      flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
+    }, 100);
+
+    const interval = setInterval(() => {
+      currentIdxRef.current++;
+      flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: true });
+      
+      if (currentIdxRef.current >= videos.length * 2) {
+        setTimeout(() => {
+          if (currentIdxRef.current >= videos.length * 2) {
+            currentIdxRef.current -= videos.length;
+            flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
+          }
+        }, 500);
+      }
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [videos.length]);
+
   if (loading) {
     return (
       <View style={[styles.section, styles.centered]}>
@@ -49,21 +78,22 @@ export default function VideoGallerySection() {
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <Text style={styles.title}>Watch & Learn</Text>
-        <Text style={styles.subtitle}>Grafting tutorials, live harvesting & nursery walkthroughs</Text>
+        <Text style={styles.title}>{t('home.videoGallery', { defaultValue: 'Video Gallery' })}</Text>
       </View>
 
-      <ScrollView
+      <FlatList
+        ref={flatListRef}
+        data={extendedVideos}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-      >
-        {videos.map((item, idx) => {
+        keyExtractor={(item, idx) => `video-${idx}`}
+        getItemLayout={(data, index) => ({ length: 214, offset: 214 * index, index })}
+        renderItem={({ item, index: idx }) => {
           const thumb = item.thumbnailUrl || item.image || '';
           if (!thumb) return null;
           return (
             <TouchableOpacity
-              key={item._id || item.id || idx.toString()}
               style={styles.card}
               activeOpacity={0.9}
               onPress={() => {
@@ -91,8 +121,8 @@ export default function VideoGallerySection() {
               </View>
             </TouchableOpacity>
           );
-        })}
-      </ScrollView>
+        }}
+      />
 
       {/* Inline Video Player Modal */}
       <Modal

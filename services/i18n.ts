@@ -233,6 +233,8 @@ const resources = {
         noProducts: 'No products found. Add products from the Admin Panel to see them here!',
         plants: 'Plants',
         gallery: 'Gallery',
+        photoGallery: 'Photo Gallery',
+        videoGallery: 'Video Gallery',
         plantsHouse: 'Plants House',
         features: {
           shippingTitle: 'Free Shipping',
@@ -519,6 +521,8 @@ const resources = {
         noProducts: 'कोई उत्पाद नहीं मिला। यहां देखने के लिए एडमिन पैनल से उत्पाद जोड़ें!',
         plants: 'पौधे',
         gallery: 'गैलरी',
+        photoGallery: 'फोटो गैलरी',
+        videoGallery: 'वीडियो गैलरी',
         plantsHouse: 'पौधों का घर',
         features: {
           shippingTitle: 'मुफ्त शिपिंग',
@@ -805,6 +809,8 @@ const resources = {
         noProducts: 'কোন পণ্য পাওয়া যায়নি। এখানে দেখতে অ্যাডমিন প্যানেল থেকে পণ্য যোগ করুন!',
         plants: 'গাছপালা',
         gallery: 'গ্যালারি',
+        photoGallery: 'ফটো গ্যালারি',
+        videoGallery: 'ভিডিও গ্যালারি',
         plantsHouse: 'গাছপালার ঘর',
         features: {
           shippingTitle: 'ফ্রি শিপিং',

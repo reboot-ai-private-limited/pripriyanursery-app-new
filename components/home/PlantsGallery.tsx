@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { shopApi, GalleryItem } from '@/services/api';
 import { BrandColors } from '@/constants/theme';
@@ -31,6 +31,35 @@ export default function PlantsGallery() {
     fetchGallery();
   }, [t]);
 
+  const flatListRef = useRef<FlatList>(null);
+  const currentIdxRef = useRef(0);
+  
+  const extendedGallery = gallery.length > 1 ? [...gallery, ...gallery, ...gallery] : gallery;
+
+  useEffect(() => {
+    if (gallery.length <= 1) return;
+    
+    currentIdxRef.current = gallery.length;
+    setTimeout(() => {
+      flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
+    }, 100);
+
+    const interval = setInterval(() => {
+      currentIdxRef.current++;
+      flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: true });
+      
+      if (currentIdxRef.current >= gallery.length * 2) {
+        setTimeout(() => {
+          if (currentIdxRef.current >= gallery.length * 2) {
+            currentIdxRef.current -= gallery.length;
+            flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
+          }
+        }, 500);
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [gallery.length]);
+
   if (loading) {
     return (
       <View style={[styles.section, styles.centered]}>
@@ -46,20 +75,22 @@ export default function PlantsGallery() {
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('home.gallery')}</Text>
-        <Text style={styles.subtitle}>Glimpse of our mother plants, grafted trees & nursery farms</Text>
+        <Text style={styles.title}>{t('home.photoGallery', { defaultValue: 'Photo Gallery' })}</Text>
       </View>
 
-      <ScrollView
+      <FlatList
+        ref={flatListRef}
+        data={extendedGallery}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-      >
-        {gallery.map((item, idx) => {
+        keyExtractor={(item, idx) => `gallery-${idx}`}
+        getItemLayout={(data, index) => ({ length: 254, offset: 254 * index, index })}
+        renderItem={({ item, index: idx }) => {
           const imgSource = item.imageUrl || item.image || '';
           if (!imgSource) return null;
           return (
-            <View key={item._id || item.id || idx.toString()} style={styles.card}>
+            <View style={styles.card}>
               <Image
                 source={{ uri: imgSource }}
                 style={styles.image}
@@ -73,8 +104,8 @@ export default function PlantsGallery() {
               </View>
             </View>
           );
-        })}
-      </ScrollView>
+        }}
+      />
     </View>
   );
 }

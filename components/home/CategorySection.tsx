@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { shopApi, Category } from '@/services/api';
 import { BrandColors } from '@/constants/theme';
@@ -31,6 +31,35 @@ export default function CategorySection() {
     fetchCategories();
   }, [t]);
 
+  const flatListRef = useRef<FlatList>(null);
+  const currentIdxRef = useRef(0);
+  
+  const extendedCategories = categories.length > 1 ? [...categories, ...categories, ...categories] : categories;
+
+  useEffect(() => {
+    if (categories.length <= 1) return;
+    
+    currentIdxRef.current = categories.length;
+    setTimeout(() => {
+      flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
+    }, 100);
+
+    const interval = setInterval(() => {
+      currentIdxRef.current++;
+      flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: true });
+      
+      if (currentIdxRef.current >= categories.length * 2) {
+        setTimeout(() => {
+          if (currentIdxRef.current >= categories.length * 2) {
+            currentIdxRef.current -= categories.length;
+            flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
+          }
+        }, 500);
+      }
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [categories.length]);
+
   if (loading) {
     return (
       <View style={[styles.section, styles.centered]}>
@@ -48,16 +77,18 @@ export default function CategorySection() {
       <View style={styles.header}>
         <Text style={styles.sectionTitle}>{t('common.categories')}</Text>
       </View>
-      <ScrollView
+      <FlatList
+        ref={flatListRef}
+        data={extendedCategories}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-      >
-        {categories.map((item, idx) => {
+        keyExtractor={(item, idx) => `cat-${idx}`}
+        getItemLayout={(data, index) => ({ length: 126, offset: 126 * index, index })}
+        renderItem={({ item, index: idx }) => {
           const imgSource = item.imageUrl || item.image || '';
           return (
             <TouchableOpacity
-              key={item._id || item.id || idx.toString()}
               style={styles.card}
               activeOpacity={0.85}
             >
@@ -80,8 +111,8 @@ export default function CategorySection() {
               </Text>
             </TouchableOpacity>
           );
-        })}
-      </ScrollView>
+        }}
+      />
     </View>
   );
 }
@@ -111,22 +142,14 @@ const styles = StyleSheet.create({
   },
   card: {
     alignItems: 'center',
-    width: 102,
+    width: 110,
   },
   imageContainer: {
     width: 110,
     height: 110,
     borderRadius: 10,
-    backgroundColor: BrandColors.surface,
-    borderWidth: 1.5,
-    borderColor: BrandColors.border,
     overflow: 'hidden',
     marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 5,
-    elevation: 3,
   },
   image: {
     width: '100%',

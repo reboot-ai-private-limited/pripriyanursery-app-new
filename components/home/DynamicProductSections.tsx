@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import ProductSection from '@/components/home/ProductSection';
 import PlantsGallery from '@/components/home/PlantsGallery';
+import VideoGallerySection from '@/components/home/VideoGallerySection';
 import { shopApi } from '@/services/api';
 
 import { useTranslation } from 'react-i18next';
@@ -16,7 +17,7 @@ export default function DynamicProductSections() {
         const res = await shopApi.get(`/categories?t=${Date.now()}`);
         const list = res.data?.data || res.data || [];
         if (Array.isArray(list) && list.length > 0) {
-          const topCats = list.slice(0, 2).map((c: any) => ({
+          const topCats = list.slice(0, 4).map((c: any) => ({
             name: c.name,
             slug: c.slug,
           }));
@@ -25,6 +26,8 @@ export default function DynamicProductSections() {
           setCategories([
             { name: 'Flowering Plants', slug: 'flowering-plants' },
             { name: 'Outdoor Plants', slug: 'outdoor-plants' },
+            { name: 'Indoor Plants', slug: 'indoor-plants' },
+            { name: 'Fruits Plants', slug: 'fruits-plants' },
           ]);
         }
       } catch (err) {
@@ -32,6 +35,8 @@ export default function DynamicProductSections() {
         setCategories([
           { name: 'Flowering Plants', slug: 'flowering-plants' },
           { name: 'Outdoor Plants', slug: 'outdoor-plants' },
+          { name: 'Indoor Plants', slug: 'indoor-plants' },
+          { name: 'Fruits Plants', slug: 'fruits-plants' },
         ]);
       }
     };
@@ -41,6 +46,8 @@ export default function DynamicProductSections() {
   const list = categories.length > 0 ? categories : [
     { name: 'Flowering Plants', slug: 'flowering-plants' },
     { name: 'Outdoor Plants', slug: 'outdoor-plants' },
+    { name: 'Indoor Plants', slug: 'indoor-plants' },
+    { name: 'Fruits Plants', slug: 'fruits-plants' },
   ];
 
   return (
@@ -49,6 +56,7 @@ export default function DynamicProductSections() {
         <View key={`${cat.slug}-${idx}`}>
           <ProductSection title={cat.name} categorySlug={cat.slug} />
           {idx === 0 && <PlantsGallery />}
+          {idx === 2 && <VideoGallerySection />}
         </View>
       ))}
     </View>

@@ -81,7 +81,7 @@ export default function CategoryScreen() {
       >
         <View style={[styles.catImageContainer, isSelected && styles.catImageContainerSelected]}>
           {(item as any).coverImage?.url || item.imageUrl || item.image ? (
-            <Image source={{ uri: ((item as any).coverImage?.url || item.imageUrl || item.image || '') as string }} style={styles.catImage} />
+            <Image source={{ uri: ((item as any).coverImage?.url || item.imageUrl || item.image || '') as string }} style={styles.catImage} contentFit="cover" />
           ) : (
             <View style={styles.placeholder}>
               <Text style={styles.placeholderText}>{item.name?.slice(0, 2).toUpperCase()}</Text>
@@ -214,10 +214,11 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 16,
     backgroundColor: '#F3F4F6',
-    borderWidth: 1.5,
+    borderWidth: 2,
     borderColor: '#E5E7EB',
     overflow: 'hidden',
     marginBottom: 6,
+    padding: 2,
   },
   catImageContainerSelected: {
     borderColor: BrandColors.primary,
@@ -226,11 +227,12 @@ const styles = StyleSheet.create({
   catImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
+    borderRadius: 12,
   },
   placeholder: {
     width: '100%',
     height: '100%',
+    borderRadius: 12,
     backgroundColor: '#C1E8CC',
     justifyContent: 'center',
     alignItems: 'center',

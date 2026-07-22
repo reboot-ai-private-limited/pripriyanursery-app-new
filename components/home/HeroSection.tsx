@@ -14,7 +14,7 @@ export default function HeroSection() {
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
-  const scrollX = useRef(new Animated.Value(0)).current;
+  const currentIdxRef = useRef(0);
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -36,14 +36,29 @@ export default function HeroSection() {
     fetchBanners();
   }, [t]);
 
+  const extendedBanners = banners.length > 1 ? [...banners, ...banners, ...banners] : banners;
+
   useEffect(() => {
     if (banners.length <= 1) return;
+    
+    currentIdxRef.current = banners.length;
+    setTimeout(() => {
+      flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
+    }, 100);
+
     const interval = setInterval(() => {
-      setActiveIndex((prev) => {
-        const nextIdx = (prev + 1) % banners.length;
-        flatListRef.current?.scrollToIndex({ index: nextIdx, animated: true });
-        return nextIdx;
-      });
+      currentIdxRef.current++;
+      flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: true });
+      setActiveIndex(currentIdxRef.current % banners.length);
+      
+      if (currentIdxRef.current >= banners.length * 2) {
+        setTimeout(() => {
+          if (currentIdxRef.current >= banners.length * 2) {
+            currentIdxRef.current -= banners.length;
+            flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
+          }
+        }, 500);
+      }
     }, 4000);
     return () => clearInterval(interval);
   }, [banners.length]);
@@ -84,47 +99,42 @@ export default function HeroSection() {
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
-        data={banners}
+        data={extendedBanners}
         renderItem={renderItem}
-        keyExtractor={(item, idx) => item._id || item.id || idx.toString()}
+        keyExtractor={(item, idx) => `banner-${idx}`}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
-        )}
         onMomentumScrollEnd={(e) => {
           const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-          setActiveIndex(index);
+          currentIdxRef.current = index;
+          if (index >= banners.length * 2) {
+             currentIdxRef.current = index - banners.length;
+             flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
+          } else if (index < banners.length) {
+             currentIdxRef.current = index + banners.length;
+             flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
+          }
+          setActiveIndex(currentIdxRef.current % banners.length);
         }}
+        getItemLayout={(data, index) => ({ length: SCREEN_WIDTH, offset: SCREEN_WIDTH * index, index })}
       />
 
       {/* Pagination Dots */}
       {banners.length > 1 && (
         <View style={styles.pagination}>
           {banners.map((_, index) => {
-            const inputRange = [
-              (index - 1) * SCREEN_WIDTH,
-              index * SCREEN_WIDTH,
-              (index + 1) * SCREEN_WIDTH,
-            ];
-            const dotWidth = scrollX.interpolate({
-              inputRange,
-              outputRange: [6, 20, 6],
-              extrapolate: 'clamp',
-            });
-            const opacity = scrollX.interpolate({
-              inputRange,
-              outputRange: [0.4, 1, 0.4],
-              extrapolate: 'clamp',
-            });
+            const isActive = activeIndex === index;
             return (
               <Animated.View
-                key={index.toString()}
+                key={index}
                 style={[
                   styles.dot,
-                  { width: dotWidth, opacity, backgroundColor: BrandColors.primary },
+                  {
+                    width: isActive ? 20 : 6,
+                    opacity: isActive ? 1 : 0.4,
+                    backgroundColor: isActive ? BrandColors.primary : '#D1D5DB',
+                  },
                 ]}
               />
             );
