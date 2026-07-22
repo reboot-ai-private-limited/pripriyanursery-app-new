@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import AccountDrawer from '@/components/AccountDrawer';
 
 export default function StorefrontHeader() {
   const { t, i18n } = useTranslation();
@@ -19,6 +20,7 @@ export default function StorefrontHeader() {
   
   const currentLang = (i18n.language || 'en').toUpperCase();
   const [langModalVisible, setLangModalVisible] = useState(false);
+  const [accountDrawerVisible, setAccountDrawerVisible] = useState(false);
 
   const [isGlobalLoading, setIsGlobalLoading] = useState(false);
 
@@ -60,22 +62,13 @@ export default function StorefrontHeader() {
               <Text style={styles.langText}>{currentLang}</Text>
             </TouchableOpacity>
 
-            {/* Account / Login */}
+            {/* Hamburger Menu */}
             <TouchableOpacity 
               style={styles.loginBtn} 
               activeOpacity={0.7}
-              onPress={() => {
-                if (isAuthenticated) {
-                  router.push('/(tabs)/profile'); // Assuming profile tab exists or will exist
-                } else {
-                  router.push('/login');
-                }
-              }}
+              onPress={() => setAccountDrawerVisible(true)}
             >
-              <IconSymbol name="person.crop.circle.fill" size={16} color={BrandColors.primary} />
-              <Text style={styles.loginText}>
-                {isAuthenticated && user?.name ? user.name.split(' ')[0] : t('common.login', {defaultValue: 'Login'})}
-              </Text>
+              <IconSymbol name="line.3.horizontal" size={24} color={BrandColors.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -141,6 +134,12 @@ export default function StorefrontHeader() {
           <Text style={styles.loadingSubtitle}>Please wait a moment</Text>
         </View>
       </Modal>
+
+      {/* Account Drawer */}
+      <AccountDrawer 
+        visible={accountDrawerVisible} 
+        onClose={() => setAccountDrawerVisible(false)} 
+      />
     </SafeAreaView>
   );
 }
@@ -169,34 +168,33 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   logo: {
-    width: 140,
-    height: 38,
+    width: 170,
+    height: 46,
   },
   rightActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   langBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
     backgroundColor: BrandColors.surface,
     borderWidth: 1,
     borderColor: BrandColors.border,
   },
   langText: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: '800',
     color: BrandColors.primary,
   },
   loginBtn: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    justifyContent: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: BrandColors.lightGreen,
     borderWidth: 1,
     borderColor: '#C1E8CC',

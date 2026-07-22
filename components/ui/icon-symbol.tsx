@@ -28,6 +28,15 @@ const MAPPING: Record<string, ComponentProps<typeof MaterialIcons>['name']> = {
   'person.crop.circle.fill': 'account-circle',
   'chevron.left': 'chevron-left',
   'line.3.horizontal.decrease.circle': 'filter-list',
+  'pencil': 'edit',
+  'trash': 'delete',
+  'xmark': 'close',
+  'plus': 'add',
+  'location': 'location-on',
+  'cube.box': 'inventory-2',
+  'person.crop.circle.fill.badge.xmark': 'person-off',
+  'arrow.right.square': 'logout',
+  'line.3.horizontal': 'menu',
 };
 
 /**
