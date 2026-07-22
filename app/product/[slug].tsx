@@ -105,24 +105,44 @@ export default function ProductDetailsScreen() {
     ? selectedVariant.stocks 
     : (selectedVariant?.stock !== undefined ? selectedVariant.stock : (product.stocks || product.stock || 0));
   const isOutOfStock = stock <= 0;
-
-  // Gather images
+  
+  // Gather images safely
   let images: string[] = [];
-  if (selectedVariant?.imagesArray?.length > 0) {
-    selectedVariant.imagesArray.forEach((img: any) => images.push(img.url || img));
-  } else if (selectedVariant?.coverImage) {
-    images.push(typeof selectedVariant.coverImage === 'string' ? selectedVariant.coverImage : selectedVariant.coverImage.url);
-  } else {
-    if (product.coverImage) {
-      images.push(typeof product.coverImage === 'string' ? product.coverImage : product.coverImage.url);
+  
+  if (selectedVariant) {
+    // 1. Put variant cover image first
+    if (selectedVariant.coverImage) {
+      const vCover = typeof selectedVariant.coverImage === 'string' ? selectedVariant.coverImage : selectedVariant.coverImage.url;
+      if (vCover && typeof vCover === 'string' && !images.includes(vCover)) {
+        images.push(vCover);
+      }
     }
-    if (Array.isArray(product.images)) {
-      product.images.forEach((img: any) => {
-        const url = img.url || img;
-        if (url && !images.includes(url)) images.push(url);
+    // 2. Put variant gallery images next
+    if (Array.isArray(selectedVariant.imagesArray)) {
+      selectedVariant.imagesArray.forEach((img: any) => {
+        const url = img?.url || img;
+        if (url && typeof url === 'string' && !images.includes(url)) images.push(url);
       });
     }
   }
+
+  // If still no images, fallback to product images
+  if (images.length === 0) {
+    // 1. Put product cover image first
+    const mainImg = product.image || product.coverImage?.url || (typeof product.coverImage === 'string' ? product.coverImage : '') || product.imageUrl;
+    if (mainImg && typeof mainImg === 'string' && !images.includes(mainImg)) {
+      images.push(mainImg);
+    }
+
+    // 2. Put product gallery images next
+    if (Array.isArray(product.images)) {
+      product.images.forEach((img: any) => {
+        const url = img?.url || img;
+        if (url && typeof url === 'string' && !images.includes(url)) images.push(url);
+      });
+    }
+  }
+
   if (images.length === 0) {
     images.push('https://via.placeholder.com/600x600.png?text=No+Image');
   }

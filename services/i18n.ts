@@ -97,6 +97,7 @@ const resources = {
       },
 
       common: {
+        products: 'Products',
         home: 'Home',
         cart: 'Cart',
         wishlist: 'Wishlist',
@@ -385,6 +386,7 @@ const resources = {
       },
 
       common: {
+        products: 'उत्पाद',
         home: 'होम',
         cart: 'कार्ट',
         wishlist: 'विशलिस्ट',
@@ -673,6 +675,7 @@ const resources = {
       },
 
       common: {
+        products: 'পণ্য',
         home: 'হোম',
         cart: 'কার্ট',
         wishlist: 'উইশলিস্ট',

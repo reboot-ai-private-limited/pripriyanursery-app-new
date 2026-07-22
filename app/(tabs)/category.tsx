@@ -8,6 +8,8 @@ import { shopApi, Category, Product, mapProduct } from '@/services/api';
 import ProductCard from '@/components/product/ProductCard';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useTranslation } from 'react-i18next';
+import StorefrontHeader from '@/components/home/StorefrontHeader';
+import Breadcrumbs from '@/components/ui/Breadcrumbs';
 
 export default function CategoryScreen() {
   const router = useRouter();
@@ -21,6 +23,7 @@ export default function CategoryScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryParam || 'all');
   const [sortBy, setSortBy] = useState<string>('popularity');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const flatListRef = React.useRef<FlatList>(null);
 
   useEffect(() => {
     if (categoryParam) {
@@ -95,17 +98,13 @@ export default function CategoryScreen() {
     );
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t('common.products', {defaultValue: 'Products'})}</Text>
-        <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModalVisible(true)}>
-          <IconSymbol name="line.3.horizontal.decrease.circle" size={24} color={BrandColors.primary} />
-        </TouchableOpacity>
-      </View>
+  const headerElement = (
+    <View style={styles.topSection}>
+      <Breadcrumbs items={[{ label: t('common.products', {defaultValue: 'Products'}) }]} />
 
       <View style={styles.categoriesWrapper}>
         <FlatList
+          ref={flatListRef}
           data={categories}
           keyExtractor={(item) => item._id || Math.random().toString()}
           renderItem={renderCategory}
@@ -115,28 +114,46 @@ export default function CategoryScreen() {
         />
       </View>
 
-      {loading ? (
-        <View style={styles.center}>
+      <View style={styles.filterBar}>
+        <Text style={styles.resultsText}>{products.length} {t('common.products', {defaultValue: 'Products'})}</Text>
+        <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModalVisible(true)}>
+          <Text style={styles.filterBtnText}>Sort / Filter</Text>
+          <IconSymbol name="line.3.horizontal.decrease.circle" size={18} color={BrandColors.primary} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <StorefrontHeader />
+
+      <FlatList
+        data={products}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <ProductCard product={item} />}
+        numColumns={2}
+        contentContainerStyle={[styles.prodListContainer, products.length === 0 && { flexGrow: 1 }]}
+        columnWrapperStyle={styles.prodRow}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={headerElement}
+        ListEmptyComponent={() => (
+          !loading && products.length === 0 ? (
+            <View style={styles.center}>
+              <IconSymbol name="leaf.fill" size={48} color="#D1D5DB" />
+              <Text style={styles.emptyText}>No products found.</Text>
+            </View>
+          ) : null
+        )}
+      />
+
+      {loading && (
+        <View style={styles.fullPageLoader}>
           <ActivityIndicator size="large" color={BrandColors.primary} />
         </View>
-      ) : products.length === 0 ? (
-        <View style={styles.center}>
-          <IconSymbol name="leaf.fill" size={48} color="#D1D5DB" />
-          <Text style={styles.emptyText}>No products found.</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={products}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <ProductCard product={item} />}
-          numColumns={2}
-          contentContainerStyle={styles.prodListContainer}
-          columnWrapperStyle={styles.prodRow}
-          showsVerticalScrollIndicator={false}
-        />
       )}
 
-      <Modal visible={filterModalVisible} animationType="slide" transparent>
+      <Modal visible={filterModalVisible} animationType="fade" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Sort By</Text>
@@ -165,40 +182,49 @@ export default function CategoryScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#FFFFFF',
   },
-  header: {
+  topSection: {
+    backgroundColor: '#FFFFFF',
+    paddingBottom: 4,
+  },
+  categoriesWrapper: {
+    paddingVertical: 12,
+  },
+  filterBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingBottom: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    paddingVertical: 8,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#111827',
+  resultsText: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
   },
   filterBtn: {
-    padding: 8,
-    backgroundColor: BrandColors.surface,
-    borderRadius: 8,
-  },
-  categoriesWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     backgroundColor: '#FFFFFF',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  filterBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: BrandColors.dark,
   },
   catListContainer: {
     paddingHorizontal: 16,
@@ -206,23 +232,24 @@ const styles = StyleSheet.create({
   },
   catCard: {
     alignItems: 'center',
-    width: 72,
+    width: 80,
   },
   catCardSelected: {},
   catImageContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    backgroundColor: '#F3F4F6',
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
     overflow: 'hidden',
-    marginBottom: 6,
+    marginBottom: 8,
     padding: 2,
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
   catImageContainerSelected: {
-    borderColor: BrandColors.primary,
     backgroundColor: BrandColors.lightGreen,
+    borderWidth: 2,
+    borderColor: BrandColors.primary,
   },
   catImage: {
     width: '100%',
@@ -244,9 +271,9 @@ const styles = StyleSheet.create({
   },
   catName: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#6B7280',
     textAlign: 'center',
+    color: '#6B7280',
+    fontWeight: '500',
   },
   catNameSelected: {
     color: BrandColors.primary,
@@ -260,14 +287,21 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#9CA3AF',
+    color: '#6B7280',
+  },
+  fullPageLoader: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
   },
   prodListContainer: {
-    padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 24,
   },
   prodRow: {
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
     marginBottom: 16,
   },
   modalOverlay: {

@@ -6,19 +6,18 @@ import { BrandColors } from '@/constants/theme';
 import { useTranslation } from 'react-i18next';
 import { useWishlist } from '@/contexts/WishlistContext';
 import ProductCard from '@/components/product/ProductCard';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import StorefrontHeader from '@/components/home/StorefrontHeader';
+import Breadcrumbs from '@/components/ui/Breadcrumbs';
 
 export default function WishlistScreen() {
   const { t } = useTranslation();
   const { wishlist } = useWishlist();
-  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
+      <StorefrontHeader />
       <View style={styles.container}>
-        <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-          <Text style={styles.title}>{t('wishlist.title', {defaultValue: 'My Wishlist'})}</Text>
-        </View>
+        <Breadcrumbs items={[{ label: t('wishlist.title', {defaultValue: 'My Wishlist'}) }]} />
         
         {wishlist.length === 0 ? (
           <View style={styles.center}>
@@ -38,15 +37,13 @@ export default function WishlistScreen() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
   container: { flex: 1, backgroundColor: '#F9FAFB' },
-  header: { paddingBottom: 20, paddingHorizontal: 16, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  title: { fontSize: 24, fontWeight: '800', color: '#111827' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   emptyTitle: { fontSize: 18, fontWeight: '700', color: BrandColors.dark, marginTop: 16, marginBottom: 8 },
   emptyDesc: { fontSize: 14, color: '#6B7280', textAlign: 'center' },
