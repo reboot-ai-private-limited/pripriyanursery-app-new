@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ToastAndroid, Platform, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Product } from '@/services/api';
+import { Product, shopApi } from '@/services/api';
 import i18n from '@/services/i18n';
+import { useAuth } from './AuthContext';
 
 interface WishlistContextType {
   wishlist: Product[];
@@ -15,11 +16,33 @@ interface WishlistContextType {
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
   const [wishlist, setWishlist] = useState<Product[]>([]);
 
   useEffect(() => {
-    loadWishlist();
-  }, []);
+    if (isAuthenticated) {
+      syncWishlistWithApi();
+    } else {
+      loadWishlist();
+    }
+  }, [isAuthenticated]);
+
+  const syncWishlistWithApi = async () => {
+    try {
+      const res = await shopApi.get('/wishlist');
+      if (res.data?.data?.variantIds) {
+        const apiItems = res.data.data.variantIds.map((item: any) => ({
+          ...item,
+          id: item._id,
+        }));
+        setWishlist(apiItems);
+        saveWishlist(apiItems);
+      }
+    } catch (e) {
+      console.error('Failed to sync wishlist with API:', e);
+      loadWishlist();
+    }
+  };
 
   const loadWishlist = async () => {
     try {
@@ -49,10 +72,17 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   };
 
   const addToWishlist = (product: Product) => {
+    const idToCheck = product.variantId || product.defaultVariantId || product._id || product.id;
     setWishlist(prev => {
-      const pId = product._id || product.id;
-      const exists = prev.find(p => (p._id || p.id) === pId);
-      if (exists) return prev;
+      // Avoid duplicates
+      if (prev.some(p => 
+        p._id === idToCheck || p.id === idToCheck || 
+        p.variantId === idToCheck || p.defaultVariantId === idToCheck || 
+        p.productId === idToCheck || p.productId === product._id
+      )) {
+        return prev;
+      }
+      
       const updated = [...prev, product];
       saveWishlist(updated);
       showToast(i18n.t('wishlist.added', { defaultValue: 'Added to wishlist!' }));
@@ -60,25 +90,53 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const removeFromWishlist = (productId: string) => {
+  const removeFromWishlist = (idToRemove: string) => {
     setWishlist(prev => {
-      const updated = prev.filter(p => (p._id || p.id) !== productId);
+      const updated = prev.filter(p => 
+        p._id !== idToRemove && 
+        p.id !== idToRemove && 
+        p.variantId !== idToRemove && 
+        p.defaultVariantId !== idToRemove && 
+        p.productId !== idToRemove
+      );
       saveWishlist(updated);
       showToast(i18n.t('wishlist.removed', { defaultValue: 'Removed from wishlist' }));
       return updated;
     });
   };
 
-  const isInWishlist = (productId: string) => {
-    return wishlist.some(p => (p._id || p.id) === productId);
+  const isInWishlist = (idToCheck: string) => {
+    if (!idToCheck) return false;
+    return wishlist.some(p => 
+      p._id === idToCheck || 
+      p.id === idToCheck || 
+      p.variantId === idToCheck || 
+      p.defaultVariantId === idToCheck || 
+      p.productId === idToCheck
+    );
   };
 
-  const toggleWishlist = (product: Product) => {
-    const pId = product._id || product.id;
-    if (isInWishlist(pId)) {
-      removeFromWishlist(pId);
+  const toggleWishlist = async (product: Product) => {
+    // The backend expects the variant ID to toggle.
+    const apiVariantId = product.variantId || product.defaultVariantId || product._id || product.id;
+    const productObjectId = product._id || product.id;
+
+    if (isInWishlist(apiVariantId as string) || isInWishlist(productObjectId as string)) {
+      // Pass both to ensure it gets removed whether it was stored as a Product or Variant
+      removeFromWishlist(apiVariantId as string);
+      if (apiVariantId !== productObjectId) {
+        removeFromWishlist(productObjectId as string);
+      }
     } else {
       addToWishlist(product);
+    }
+
+    if (isAuthenticated) {
+      try {
+        await shopApi.patch(`/wishlist/toggle/${apiVariantId}`);
+      } catch (e) {
+        console.error('Failed to toggle wishlist on API:', e);
+      }
     }
   };
 

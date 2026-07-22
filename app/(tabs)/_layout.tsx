@@ -6,10 +6,16 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BrandColors, Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useWishlist } from '@/contexts/WishlistContext';
+import { useCart } from '@/contexts/CartContext';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { t } = useTranslation();
+  const { wishlist } = useWishlist();
+  const { cart } = useCart();
+  const wishlistCount = wishlist.length;
+  const cartCount = cart.length;
 
   return (
     <Tabs
@@ -51,6 +57,8 @@ export default function TabLayout() {
         options={{
           title: t('common.wishlist', {defaultValue: 'Wishlist'}),
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="heart.fill" color={color} />,
+          tabBarBadge: wishlistCount > 0 ? wishlistCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: '#FFFFFF', color: BrandColors.primary, fontSize: 10, minWidth: 16, height: 16, lineHeight: 16 },
         }}
       />
 
@@ -59,6 +67,8 @@ export default function TabLayout() {
         options={{
           title: t('common.cart', {defaultValue: 'Cart'}),
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="cart.fill" color={color} />,
+          tabBarBadge: cartCount > 0 ? cartCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: '#FFFFFF', color: BrandColors.primary, fontSize: 10, minWidth: 16, height: 16, lineHeight: 16 },
         }}
       />
 

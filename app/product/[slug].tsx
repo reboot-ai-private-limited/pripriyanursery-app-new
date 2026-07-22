@@ -908,6 +908,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: BrandColors.red,
   },
+
   variantsContainer: {
     marginBottom: 12,
   },

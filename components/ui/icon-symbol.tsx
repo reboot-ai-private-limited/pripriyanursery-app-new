@@ -40,6 +40,8 @@ const MAPPING: Record<string, ComponentProps<typeof MaterialIcons>['name']> = {
   'tag.fill': 'local-offer',
   'cart': 'shopping-cart',
   'star.fill': 'star',
+  'minus': 'remove',
+  'trash.fill': 'delete',
 };
 
 /**

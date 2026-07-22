@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { getLabels, formatNumberByLang } from '@/services/localization';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useCart } from '@/contexts/CartContext';
 
 export default function ProductCard({ product, onPress }: ProductCardProps) {
   const router = useRouter();
@@ -24,9 +25,13 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
   const lang = i18n.language || 'en';
   const labels = getLabels(lang);
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart, updateQuantity, removeFromCart, getCartItemQty } = useCart();
 
   const isWishlisted = isInWishlist(product._id || product.id);
-  const [cartQty, setCartQty] = useState(0);
+  
+  // Use Product ID to check if it's in cart (default variant)
+  const cartItemId = product.defaultVariantId || product._id || product.id;
+  const cartQty = getCartItemQty(cartItemId);
 
   const title = product.title || (product as any).name || 'Exotic Nursery Plant';
   const price = product.price || 0;
@@ -41,15 +46,19 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
   };
 
   const handleAddToCart = () => {
-    setCartQty(1);
+    addToCart(product, 1);
   };
 
   const incrementQty = () => {
-    setCartQty(prev => prev + 1);
+    updateQuantity(cartItemId, cartQty + 1);
   };
 
   const decrementQty = () => {
-    setCartQty(prev => Math.max(0, prev - 1));
+    if (cartQty <= 1) {
+      removeFromCart(cartItemId);
+    } else {
+      updateQuantity(cartItemId, cartQty - 1);
+    }
   };
 
   return (

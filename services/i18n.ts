@@ -137,6 +137,12 @@ const resources = {
         totalAmount: 'Total Amount',
         items: 'items',
         safeSecure: 'Safe and Secure Payments. Easy returns. 100% Authentic products.',
+        subtotal: 'Subtotal',
+        tax: 'Estimated Tax',
+        total: 'Total',
+        checkout: 'Proceed to Checkout',
+        added: 'Added to cart!',
+        removed: 'Removed from cart'
       },
       wishlist: {
         title: 'My Wishlist',
@@ -426,6 +432,12 @@ const resources = {
         totalAmount: 'कुल राशि',
         items: 'उत्पाद',
         safeSecure: 'सुरक्षित भुगतान। आसान रिटर्न। 100% प्रामाणिक उत्पाद।',
+        subtotal: 'उप-कुल',
+        tax: 'अनुमानित कर',
+        total: 'कुल',
+        checkout: 'चेकआउट के लिए आगे बढ़ें',
+        added: 'कार्ट में जोड़ा गया!',
+        removed: 'कार्ट से हटाया गया'
       },
       wishlist: {
         title: 'मेरी विशलिस्ट',
@@ -715,6 +727,12 @@ const resources = {
         totalAmount: 'মোট পরিমাণ',
         items: 'পণ্য',
         safeSecure: 'নিরাপদ পেমেন্ট। সহজ রিটার্ন। ১০০% আসল পণ্য।',
+        subtotal: 'সাবটোটাল',
+        tax: 'আনুমানিক ট্যাক্স',
+        total: 'মোট',
+        checkout: 'চেকআউটে যান',
+        added: 'কার্টে যোগ করা হয়েছে!',
+        removed: 'কার্ট থেকে সরানো হয়েছে'
       },
       wishlist: {
         title: 'আমার উইশলিস্ট',

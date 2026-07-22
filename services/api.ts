@@ -27,11 +27,7 @@ shopApi.interceptors.request.use(async (config) => {
     try {
       const token = await AsyncStorage.getItem('token');
       if (token) {
-        if (typeof config.headers.set === 'function') {
-          config.headers.set('Authorization', `Bearer ${token}`);
-        } else {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
+        config.headers['Authorization'] = `Bearer ${token}`;
       }
     } catch (err) {}
   }
@@ -75,6 +71,14 @@ export interface Product {
   slug: string;
   variantId?: string | number;
   categoryId?: string;
+  isTaxInclude?: boolean;
+  effectiveTax?: any[];
+  coverImage?: any;
+  defaultVariantId?: string;
+  variants?: any[];
+  productId?: string;
+  attributes?: Record<string, any>;
+  specs?: any[];
 }
 
 export interface GalleryItem {
