@@ -37,6 +37,9 @@ const MAPPING: Record<string, ComponentProps<typeof MaterialIcons>['name']> = {
   'person.crop.circle.fill.badge.xmark': 'person-off',
   'arrow.right.square': 'logout',
   'line.3.horizontal': 'menu',
+  'tag.fill': 'local-offer',
+  'cart': 'shopping-cart',
+  'star.fill': 'star',
 };
 
 /**

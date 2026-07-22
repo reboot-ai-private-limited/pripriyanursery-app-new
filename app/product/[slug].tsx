@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Share, Modal } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Image } from 'expo-image';
 import { shopApi } from '@/services/api';
@@ -32,6 +32,13 @@ export default function ProductDetailsScreen() {
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  
+  const [offers, setOffers] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
+
+  const [showMoreDesc, setShowMoreDesc] = useState(false);
+  const [showMoreSpecs, setShowMoreSpecs] = useState(false);
+  const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -52,9 +59,20 @@ export default function ProductDetailsScreen() {
     fetchProduct();
   }, [slug, lang]);
 
+  useEffect(() => {
+    shopApi.get(`/coupons/available?lang=${lang}`).then(res => setOffers(res.data?.data?.coupons || [])).catch(()=>{});
+  }, [lang]);
+
+  useEffect(() => {
+    if (product?._id) {
+      shopApi.get(`/reviews/product/${product._id}`).then(res => setReviews(res.data?.data || [])).catch(()=>{});
+    }
+  }, [product?._id]);
+
   if (loading) {
     return (
       <View style={[styles.container, styles.centered]}>
+        <Stack.Screen options={{ headerShown: false }} />
         <ActivityIndicator size="large" color={BrandColors.primary} />
       </View>
     );
@@ -63,6 +81,7 @@ export default function ProductDetailsScreen() {
   if (!product) {
     return (
       <View style={[styles.container, styles.centered]}>
+        <Stack.Screen options={{ headerShown: false }} />
         <IconSymbol name="exclamationmark.triangle.fill" size={48} color={BrandColors.red} />
         <Text style={styles.errorText}>Product Not Found</Text>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
@@ -91,10 +110,12 @@ export default function ProductDetailsScreen() {
   let images: string[] = [];
   if (selectedVariant?.imagesArray?.length > 0) {
     selectedVariant.imagesArray.forEach((img: any) => images.push(img.url || img));
-  } else if (selectedVariant?.coverImage?.url) {
-    images.push(selectedVariant.coverImage.url);
+  } else if (selectedVariant?.coverImage) {
+    images.push(typeof selectedVariant.coverImage === 'string' ? selectedVariant.coverImage : selectedVariant.coverImage.url);
   } else {
-    if (product.coverImage?.url) images.push(product.coverImage.url);
+    if (product.coverImage) {
+      images.push(typeof product.coverImage === 'string' ? product.coverImage : product.coverImage.url);
+    }
     if (Array.isArray(product.images)) {
       product.images.forEach((img: any) => {
         const url = img.url || img;
@@ -124,6 +145,18 @@ export default function ProductDetailsScreen() {
     if (product) toggleWishlist(product);
   };
 
+  const handleShare = async () => {
+    try {
+      const url = `https://pripriyanursery.com/product/${slug}`;
+      await Share.share({
+        message: `${title}\nCheck this out: ${url}`,
+        url: url,
+      });
+    } catch (error) {
+      console.log('Error sharing', error);
+    }
+  };
+
   const productId = product?._id || product?.id;
   const cartItemId = selectedVariantIndex !== undefined ? `${productId}-${selectedVariantIndex}` : productId;
   const currentCartQty = getCartItemQty(productId, selectedVariantIndex);
@@ -146,6 +179,44 @@ export default function ProductDetailsScreen() {
     }
   };
 
+  const getOfferText = (offer: any, lang: string) => {
+    const discountVal = offer.type === 'percentage' 
+      ? `${formatNumberByLang(offer.value, lang)}%` 
+      : `₹${formatNumberByLang(offer.value, lang)}`;
+    const minVal = offer.minOrderValue > 0 ? `₹${formatNumberByLang(offer.minOrderValue, lang)}` : null;
+    const maxVal = offer.maxDiscount > 0 ? `₹${formatNumberByLang(offer.maxDiscount, lang)}` : null;
+    
+    if (lang === 'bn') {
+      let text = '';
+      if (minVal) text += `সর্বনিম্ন ${minVal} অর্ডারে `;
+      text += `${discountVal} ছাড় পেতে `;
+      if (maxVal) text += `(সর্বোচ্চ ${maxVal} পর্যন্ত) `;
+      text += `কুপন `;
+      return { prefix: text, suffix: ` ব্যবহার করুন।` };
+    } else if (lang === 'hi') {
+      let text = '';
+      if (minVal) text += `न्यूनतम ${minVal} के ऑर्डर पर `;
+      text += `${discountVal} की छूट के लिए `;
+      if (maxVal) text += `(अधिकतम ${maxVal} तक) `;
+      text += `कूपन `;
+      return { prefix: text, suffix: ` का उपयोग करें।` };
+    } else {
+      let text = `Use coupon `;
+      let suffix = ` for ${discountVal} discount`;
+      if (minVal) suffix += ` on minimum order of ${minVal}`;
+      if (maxVal) suffix += ` (up to ${maxVal})`;
+      suffix += `.`;
+      return { prefix: text, suffix };
+    }
+  };
+
+  const FEATURES = [
+    { id: 1, title: labels.support24x7 || "24x7 Support", icon: "https://pripriyanursery.com/images/icons/24x7support.svg" },
+    { id: 2, title: labels.easyReturn || "Easy Return", icon: "https://pripriyanursery.com/images/icons/easyreturn.svg" },
+    { id: 3, title: labels.original100 || "100% Original", icon: "https://pripriyanursery.com/images/icons/originalproduct.svg" },
+    { id: 4, title: labels.makeInIndia || "Make In India", icon: "https://pripriyanursery.com/images/icons/makeinindia.svg" },
+  ];
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -157,10 +228,10 @@ export default function ProductDetailsScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity style={styles.headerIcon} onPress={() => router.back()}>
-          <IconSymbol name="chevron.left" size={24} color={BrandColors.dark} />
+          <FontAwesome5 name="chevron-left" size={20} color={BrandColors.dark} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
-        <TouchableOpacity style={styles.headerIcon}>
+        <TouchableOpacity style={styles.headerIcon} onPress={() => router.push('/cart')}>
           <IconSymbol name="cart" size={24} color={BrandColors.dark} />
         </TouchableOpacity>
       </View>
@@ -178,9 +249,14 @@ export default function ProductDetailsScreen() {
             }}
           >
             {images.map((imgUrl, idx) => (
-              <View key={idx} style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }}>
+              <TouchableOpacity 
+                activeOpacity={0.9} 
+                onPress={() => setIsImageViewerVisible(true)} 
+                key={idx} 
+                style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }}
+              >
                 <Image source={{ uri: imgUrl }} style={styles.mainImage} contentFit="cover" transition={200} />
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
           
@@ -193,13 +269,18 @@ export default function ProductDetailsScreen() {
             </View>
           )}
 
-          <TouchableOpacity style={styles.wishlistBtn} onPress={handleToggleWishlist}>
-            <IconSymbol 
-              name={isWishlisted ? 'heart.fill' : 'heart'} 
-              size={22} 
-              color={isWishlisted ? BrandColors.red : '#4B5563'} 
-            />
-          </TouchableOpacity>
+          <View style={styles.floatingIcons}>
+            <TouchableOpacity style={styles.iconBtn} onPress={handleToggleWishlist}>
+              <IconSymbol 
+                name={isWishlisted ? 'heart.fill' : 'heart'} 
+                size={22} 
+                color={isWishlisted ? BrandColors.red : '#4B5563'} 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconBtn} onPress={handleShare}>
+              <FontAwesome5 name="share-alt" size={20} color="#4B5563" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Product Info */}
@@ -216,11 +297,26 @@ export default function ProductDetailsScreen() {
                 </View>
               </>
             )}
+            <Text style={[styles.stockText, isOutOfStock && styles.outOfStockTextBadge]}>
+              {isOutOfStock ? labels.outOfStock : `${labels.inStock}: ${formatNumberByLang(stock, lang)}`}
+            </Text>
           </View>
           
-          <Text style={[styles.stockText, isOutOfStock && styles.outOfStockTextBadge]}>
-            {isOutOfStock ? labels.outOfStock : `${labels.inStock}: ${formatNumberByLang(stock, lang)}`}
-          </Text>
+          {product?.effectiveTax && product.effectiveTax.length > 0 && (
+            <View style={styles.taxRow}>
+              <Text style={styles.taxText}>
+                {(lang === 'bn' ? 'ট্যাক্স: ' : lang === 'hi' ? 'कर: ' : 'Tax: ')}
+                {product.effectiveTax.map((t: any) => {
+                  const nameLower = t.name.toLowerCase();
+                  let translatedName = t.name;
+                  if (nameLower === 'exempted') {
+                    translatedName = lang === 'bn' ? 'ছাড়' : lang === 'hi' ? 'मुक्त' : 'Exempted';
+                  }
+                  return t.slab === 0 ? translatedName : `${formatNumberByLang(t.slab, lang)}% ${translatedName}`;
+                }).join(' + ')}
+              </Text>
+            </View>
+          )}
 
           {/* Variants Selector */}
           {Array.isArray(product.variants) && product.variants.length > 0 && (
@@ -255,40 +351,109 @@ export default function ProductDetailsScreen() {
             </View>
           )}
 
-          {/* Features highlight */}
-          <View style={styles.featuresRow}>
-            <View style={styles.featureItem}>
-              <FontAwesome5 name="shipping-fast" size={14} color={BrandColors.primary} />
-              <Text style={styles.featureText}>{t('home.features.shippingTitle', {defaultValue: 'Free Shipping'})}</Text>
+          {/* Available Offers */}
+          {offers.length > 0 && (
+            <View style={styles.offersContainer}>
+              <View style={styles.offersHeader}>
+                <IconSymbol name="tag.fill" size={18} color={BrandColors.primary} />
+                <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>{labels.availableOffers || "Available Offers"}</Text>
+              </View>
+              {offers.map((offer) => {
+                const { prefix, suffix } = getOfferText(offer, lang);
+                return (
+                  <View key={offer._id || offer.code} style={styles.offerItem}>
+                    <View style={styles.offerDot} />
+                    <Text style={styles.offerText}>
+                      {prefix}
+                      <Text style={styles.offerCode}>{offer.code}</Text>
+                      {suffix}
+                    </Text>
+                  </View>
+                );
+              })}
             </View>
-            <View style={styles.featureItem}>
-              <FontAwesome5 name="seedling" size={14} color={BrandColors.primary} />
-              <Text style={styles.featureText}>{t('home.features.originalTitle', {defaultValue: '100% Original'})}</Text>
-            </View>
-          </View>
+          )}
 
-          {/* Description */}
-          {cleanDesc ? (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Description</Text>
-              <Text style={styles.descriptionText}>{cleanDesc}</Text>
-            </View>
-          ) : null}
+          {/* Trust Banner / Features */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.trustBannerScroll}>
+            {FEATURES.map((feat) => (
+              <View key={feat.id} style={styles.trustItem}>
+                <View style={styles.trustIconBox}>
+                  <Image source={{ uri: feat.icon }} style={styles.trustIcon} contentFit="contain" />
+                </View>
+                <Text style={styles.trustText}>{feat.title}</Text>
+              </View>
+            ))}
+          </ScrollView>
 
           {/* Specifications */}
           {specs.length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Specifications</Text>
+              <Text style={styles.sectionTitle}>{labels.specifications || "Specifications"}</Text>
               <View style={styles.specsBox}>
-                {specs.map((spec: any, idx: number) => (
-                  <View key={idx} style={[styles.specRow, idx === specs.length - 1 && { borderBottomWidth: 0 }]}>
+                {(showMoreSpecs ? specs : specs.slice(0, 3)).map((spec: any, idx: number) => (
+                  <View key={idx} style={[styles.specRow, idx === (showMoreSpecs ? specs.length - 1 : Math.min(specs.length, 3) - 1) && { borderBottomWidth: 0 }]}>
                     <Text style={styles.specLabel}>{spec.label || spec.key}</Text>
                     <Text style={styles.specValue}>{spec.value}</Text>
                   </View>
                 ))}
               </View>
+              {specs.length > 3 && (
+                <TouchableOpacity onPress={() => setShowMoreSpecs(!showMoreSpecs)} style={styles.showMoreBtn}>
+                  <Text style={styles.showMoreText}>{showMoreSpecs ? (labels.showLess || "Show Less") : (labels.showMore || "Show More")}</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
+
+          {/* Description */}
+          {cleanDesc ? (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{labels.description || "Description"}</Text>
+              <Text style={styles.descriptionText} numberOfLines={showMoreDesc ? undefined : 3}>{cleanDesc}</Text>
+              {cleanDesc.length > 100 && (
+                <TouchableOpacity onPress={() => setShowMoreDesc(!showMoreDesc)} style={styles.showMoreBtn}>
+                  <Text style={styles.showMoreText}>{showMoreDesc ? (labels.showLess || "Show Less") : (labels.showMore || "Show More")}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : null}
+
+          {/* Customer Reviews */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{labels.customerReviews || "Customer Reviews"} ({reviews.length})</Text>
+            {reviews.length > 0 ? (
+              reviews.map((rev, idx) => (
+                <View key={idx} style={styles.reviewCard}>
+                  <View style={styles.reviewHeader}>
+                    <View style={styles.reviewerInfo}>
+                      <View style={styles.avatarPlaceholder}>
+                        <Text style={styles.avatarText}>{rev.userName?.charAt(0) || 'U'}</Text>
+                      </View>
+                      <Text style={styles.reviewerName}>{rev.userName || 'User'}</Text>
+                    </View>
+                    <View style={styles.ratingBadge}>
+                      <Text style={styles.ratingText}>{rev.rating}</Text>
+                      <IconSymbol name="star.fill" size={10} color="#FFFFFF" />
+                    </View>
+                  </View>
+                  <Text style={styles.reviewTitle}>{rev.title}</Text>
+                  <Text style={styles.reviewComment}>{rev.comment}</Text>
+                  {rev.images && rev.images.length > 0 && (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.reviewImagesScroll}>
+                      {rev.images.map((img: any, iIdx: number) => (
+                        <Image key={iIdx} source={{ uri: img.url || img }} style={styles.reviewImage} contentFit="cover" />
+                      ))}
+                    </ScrollView>
+                  )}
+                </View>
+              ))
+            ) : (
+              <View style={styles.noReviewsBox}>
+                <Text style={styles.noReviewsText}>{labels.noReviewsYet || "No reviews yet"}</Text>
+              </View>
+            )}
+          </View>
         </View>
       </ScrollView>
 
@@ -318,6 +483,27 @@ export default function ProductDetailsScreen() {
           </View>
         )}
       </View>
+
+      {/* Fullscreen Image Viewer Modal */}
+      <Modal visible={isImageViewerVisible} transparent={true} onRequestClose={() => setIsImageViewerVisible(false)}>
+        <View style={styles.imageViewerContainer}>
+          <TouchableOpacity style={styles.imageViewerCloseBtn} onPress={() => setIsImageViewerVisible(false)}>
+            <IconSymbol name="xmark" size={28} color="#FFFFFF" />
+          </TouchableOpacity>
+          <ScrollView 
+            horizontal 
+            pagingEnabled 
+            showsHorizontalScrollIndicator={false}
+            contentOffset={{ x: activeImageIndex * SCREEN_WIDTH, y: 0 }}
+          >
+            {images.map((imgUrl, idx) => (
+              <View key={idx} style={{ width: SCREEN_WIDTH, height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                <Image source={{ uri: imgUrl }} style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }} contentFit="contain" />
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -419,21 +605,20 @@ const styles = StyleSheet.create({
     width: 16,
     backgroundColor: BrandColors.primary,
   },
-  wishlistBtn: {
+  floatingIcons: {
     position: 'absolute',
     top: 16,
     right: 16,
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
   },
   infoContainer: {
     padding: 20,
@@ -450,7 +635,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 8,
+    marginBottom: 8,
+  },
+  taxRow: {
     marginBottom: 16,
+  },
+  taxText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6B7280',
   },
   price: {
     fontSize: 26,
@@ -461,6 +654,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#9CA3AF',
     textDecorationLine: 'line-through',
+  },
+  stockText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: BrandColors.primary,
+    backgroundColor: BrandColors.lightGreen,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginLeft: 4,
+    overflow: 'hidden',
+  },
+  outOfStockTextBadge: {
+    color: BrandColors.red,
+    backgroundColor: BrandColors.lightRed,
   },
   discountBadge: {
     backgroundColor: BrandColors.lightRed,
@@ -473,27 +681,81 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: BrandColors.red,
   },
-  featuresRow: {
-    flexDirection: 'row',
-    gap: 12,
+  offersContainer: {
     marginBottom: 24,
-    paddingBottom: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
   },
-  featureItem: {
+  offersHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: BrandColors.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
     gap: 8,
+    marginBottom: 12,
   },
-  featureText: {
-    fontSize: 12,
+  offerItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+    gap: 8,
+    backgroundColor: '#F0FDF4',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DCFCE7',
+  },
+  offerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: BrandColors.primary,
+    marginTop: 6,
+  },
+  offerText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#374151',
+    lineHeight: 20,
+  },
+  offerCode: {
+    fontWeight: 'bold',
+    color: BrandColors.primary,
+    backgroundColor: 'rgba(21, 128, 61, 0.1)',
+    paddingHorizontal: 4,
+    borderRadius: 4,
+  },
+  trustBannerScroll: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingBottom: 24,
+    marginBottom: 12,
+  },
+  trustItem: {
+    alignItems: 'center',
+    width: (SCREEN_WIDTH - 40) / 4,
+  },
+  trustIconBox: {
+    width: 50,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  trustIcon: {
+    width: 44,
+    height: 44,
+  },
+  trustText: {
+    fontSize: 10,
     fontWeight: '600',
     color: BrandColors.dark,
+    textAlign: 'center',
+  },
+  showMoreBtn: {
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  showMoreText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: BrandColors.primary,
   },
   section: {
     marginBottom: 24,
@@ -542,8 +804,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 15,
+    paddingVertical: 7,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
     shadowColor: '#000',
@@ -562,7 +824,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 28,
+    borderRadius: 14,
     paddingVertical: 14,
     gap: 8,
     borderWidth: 1,
@@ -578,7 +840,7 @@ const styles = StyleSheet.create({
     backgroundColor: BrandColors.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 28,
+    borderRadius: 14,
     paddingVertical: 14,
   },
   buyBtnText: {
@@ -592,7 +854,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderRadius: 28,
+    borderRadius: 14,
     paddingHorizontal: 8,
     borderWidth: 1,
     borderColor: BrandColors.primary,
@@ -616,7 +878,7 @@ const styles = StyleSheet.create({
   outOfStockBtn: {
     backgroundColor: BrandColors.lightRed,
     paddingVertical: 16,
-    borderRadius: 28,
+    borderRadius: 14,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#FECACA',
@@ -624,16 +886,6 @@ const styles = StyleSheet.create({
   outOfStockText: {
     fontSize: 16,
     fontWeight: '800',
-    color: BrandColors.red,
-  },
-  stockText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: BrandColors.primary,
-    marginBottom: 8,
-    marginTop: -8,
-  },
-  outOfStockTextBadge: {
     color: BrandColors.red,
   },
   variantsContainer: {
@@ -672,5 +924,100 @@ const styles = StyleSheet.create({
   variantTextActive: {
     color: BrandColors.primary,
     fontWeight: '700',
+  },
+  reviewCard: {
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  reviewerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  avatarPlaceholder: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#4B5563',
+  },
+  reviewerName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: BrandColors.dark,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: BrandColors.primary,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    gap: 2,
+  },
+  ratingText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  reviewTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: BrandColors.dark,
+    marginBottom: 4,
+  },
+  reviewComment: {
+    fontSize: 13,
+    color: '#4B5563',
+    lineHeight: 20,
+  },
+  reviewImagesScroll: {
+    marginTop: 12,
+    flexDirection: 'row',
+  },
+  reviewImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 8,
+    backgroundColor: '#F3F4F6',
+  },
+  noReviewsBox: {
+    padding: 24,
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+  },
+  noReviewsText: {
+    color: '#6B7280',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  imageViewerContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+  },
+  imageViewerCloseBtn: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    padding: 8,
   }
 });

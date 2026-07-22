@@ -76,12 +76,12 @@ export default function CategoryScreen() {
     return (
       <TouchableOpacity 
         style={[styles.catCard, isSelected && styles.catCardSelected]}
-        onPress={() => setSelectedCategory(item._id)}
+        onPress={() => setSelectedCategory(item._id || '')}
         activeOpacity={0.8}
       >
         <View style={[styles.catImageContainer, isSelected && styles.catImageContainerSelected]}>
-          {item.coverImage?.url || item.imageUrl || item.image ? (
-            <Image source={{ uri: (item.coverImage?.url || item.imageUrl || item.image || '') as string }} style={styles.catImage} />
+          {(item as any).coverImage?.url || item.imageUrl || item.image ? (
+            <Image source={{ uri: ((item as any).coverImage?.url || item.imageUrl || item.image || '') as string }} style={styles.catImage} />
           ) : (
             <View style={styles.placeholder}>
               <Text style={styles.placeholderText}>{item.name?.slice(0, 2).toUpperCase()}</Text>
@@ -107,7 +107,7 @@ export default function CategoryScreen() {
       <View style={styles.categoriesWrapper}>
         <FlatList
           data={categories}
-          keyExtractor={(item) => item._id}
+          keyExtractor={(item) => item._id || Math.random().toString()}
           renderItem={renderCategory}
           horizontal
           showsHorizontalScrollIndicator={false}
