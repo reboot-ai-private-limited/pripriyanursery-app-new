@@ -46,7 +46,6 @@ export default function CartScreen() {
   cart.forEach((item) => {
     const product = item.product;
     if (
-      product.isTaxInclude === false &&
       product.effectiveTax &&
       product.effectiveTax.length > 0
     ) {
@@ -108,12 +107,16 @@ export default function CartScreen() {
                 const price = getProductPrice(item.product);
                 return (
                   <View key={item.id} style={styles.cartItem}>
-                    <Image source={{ uri: img }} style={styles.itemImg} />
+                    <TouchableOpacity onPress={() => router.push(`/product/${item.product.slug || item.product.id}`)}>
+                      <Image source={{ uri: img }} style={styles.itemImg} />
+                    </TouchableOpacity>
                     <View style={styles.itemInfo}>
                       <View>
-                        <Text style={styles.itemTitle} numberOfLines={2}>
-                          {item.product.title}
-                        </Text>
+                        <TouchableOpacity onPress={() => router.push(`/product/${item.product.slug || item.product.id}`)}>
+                          <Text style={styles.itemTitle} numberOfLines={2}>
+                            {item.product.title}
+                          </Text>
+                        </TouchableOpacity>
 
                         {/* Render Specifications / Attributes */}
                         {(() => {
@@ -242,7 +245,7 @@ export default function CartScreen() {
                 ₹{formatNumberByLang(Math.round(grandTotal), lang)}
               </Text>
             </View>
-            <TouchableOpacity style={styles.checkoutBtn}>
+            <TouchableOpacity style={styles.checkoutBtn} onPress={() => router.push('/checkout')}>
               <Text style={styles.checkoutBtnText}>
                 {t("cart.checkout", { defaultValue: "Proceed to Checkout" })}
               </Text>

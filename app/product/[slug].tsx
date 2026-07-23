@@ -27,7 +27,7 @@ export default function ProductDetailsScreen() {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [isVariantLoading, setIsVariantLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-  const { addToCart, updateQuantity, removeFromCart, getCartItemQty } = useCart();
+  const { addToCart, updateQuantity, removeFromCart, getCartItemQty, cart } = useCart();
 
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -253,6 +253,11 @@ export default function ProductDetailsScreen() {
         <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
         <TouchableOpacity style={styles.headerIcon} onPress={() => router.push('/cart')}>
           <IconSymbol name="cart" size={24} color={BrandColors.dark} />
+          {cart.length > 0 && (
+            <View style={styles.cartBadge}>
+              <Text style={styles.cartBadgeText}>{formatNumberByLang(cart.length, lang)}</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -584,6 +589,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  cartBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: BrandColors.primary,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  cartBadgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   headerTitle: {
     flex: 1,

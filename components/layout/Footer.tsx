@@ -114,22 +114,22 @@ export default function Footer() {
         
         <View style={styles.contactItem}>
           <FontAwesome5 name="map-marker-alt" size={16} color="rgba(255,255,255,0.6)" />
-          <Text style={styles.contactText}>{t('footer.address', {defaultValue: 'A112, 1st Floor, Pripriya IT Park, Sector 62, Noida, UP 201309'})}</Text>
+          <Text style={styles.contactText}>{t('footer.address', {defaultValue: 'Simulpukur, Gangadhar shishu niketan, Simulpukur, Ukrah, Nadia, West Bengal, 741257'})}</Text>
         </View>
         
         <View style={styles.contactItem}>
           <FontAwesome5 name="envelope" size={16} color="rgba(255,255,255,0.6)" />
-          <Text style={styles.contactText}>support@pripriya.com</Text>
+          <Text style={styles.contactText}>pripriyanursery@gmail.com</Text>
         </View>
         
         <View style={styles.contactItem}>
           <FontAwesome5 name="phone-alt" size={16} color="rgba(255,255,255,0.6)" />
-          <Text style={styles.contactText}>+91 1234567890</Text>
+          <Text style={styles.contactText}>+91 75868 91753</Text>
         </View>
 
         <View style={styles.contactItem}>
           <FontAwesome5 name="whatsapp" size={18} color="rgba(255,255,255,0.6)" />
-          <Text style={styles.contactText}>+91 1234567890</Text>
+          <Text style={styles.contactText}>+91 75868 91753</Text>
         </View>
       </View>
 

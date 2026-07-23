@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { ToastAndroid, Platform, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Product, shopApi } from '@/services/api';
-import i18n from '@/services/i18n';
+import i18n_service from '@/services/i18n';
 import { useAuth } from './AuthContext';
+import { useTranslation } from 'react-i18next';
 
 interface WishlistContextType {
   wishlist: Product[];
@@ -16,6 +17,7 @@ interface WishlistContextType {
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
+  const { i18n } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [wishlist, setWishlist] = useState<Product[]>([]);
 
@@ -25,7 +27,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     } else {
       loadWishlist();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, i18n.language]);
 
   const syncWishlistWithApi = async () => {
     try {

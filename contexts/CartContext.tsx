@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { ToastAndroid, Platform, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Product, shopApi } from '@/services/api';
-import i18n from '@/services/i18n';
+import i18n_service from '@/services/i18n';
 import { useAuth } from './AuthContext';
+import { useTranslation } from 'react-i18next';
 
 export interface CartItem {
   id: string; // unique string like `${product._id}-${variantIndex}`
@@ -24,6 +25,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { i18n } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
 
@@ -33,7 +35,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } else {
       loadCart();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, i18n.language]);
 
   const syncCartWithApi = async () => {
     try {

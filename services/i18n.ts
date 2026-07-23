@@ -32,7 +32,7 @@ const resources = {
         section6Title: 'Your Rights',
         section6Intro: 'You may request access, correction, or deletion of your personal data by contacting us:',
         email: 'Email: pripriyanursery@gmail.com',
-        phone: 'Phone: +91 9679164875'
+        phone: 'Phone: +91 75868 91753'
       },
       shipping: {
         title: 'Shipping Policy',
@@ -70,7 +70,7 @@ const resources = {
         section4Point2: 'Refund timeline: 5–7 working days',
         section5Title: 'Contact for Refund Issues',
         email: 'Email: pripriyanursery@gmail.com',
-        phone: 'Phone: +91 9679164875'
+        phone: 'Phone: +91 75868 91753'
       },
 
 
@@ -264,7 +264,7 @@ const resources = {
         contactInfo: 'Contact Information',
         copyright: 'Copyright © 2026 Pripriya Nursery. All Rights Reserved.',
         description: 'delivers healthy, carefully nurtured plants across India, especially in the North East—trusted by gardeners, landscapers, and plant lovers.',
-        address: 'Bhairabsthan, Purbasthali, Purba Bardhaman - 713513',
+        address: 'Simulpukur, Gangadhar shishu niketan, Simulpukur, Ukrah, Nadia, West Bengal, 741257',
         quickLinksList: {
           terms: 'Terms & Condition',
           privacy: 'Privacy Policy',
@@ -294,6 +294,9 @@ const resources = {
         moreToApply: 'more to apply',
         couponDiscount: 'Coupon Discount',
         processing: 'Processing...',
+        couponAlreadyUsed: 'You have already used this coupon',
+        hideAddresses: 'Hide',
+        selectAnotherAddress: 'Select another address',
       },
     },
   },
@@ -327,7 +330,7 @@ const resources = {
         section6Title: 'आपके अधिकार',
         section6Intro: 'आप हमसे संपर्क करके अपने व्यक्तिगत डेटा तक पहुंच, सुधार या हटाने का अनुरोध कर सकते हैं:',
         email: 'ईमेल: pripriyanursery@gmail.com',
-        phone: 'फोन: +91 9679164875'
+        phone: 'फोन: +91 75868 91753'
       },
       shipping: {
         title: 'शिपिंग नीति',
@@ -365,7 +368,7 @@ const resources = {
         section4Point2: 'धनवापसी की समय सीमा: 5-7 कार्य दिवस',
         section5Title: 'रिफंड समस्याओं के लिए संपर्क',
         email: 'ईमेल: pripriyanursery@gmail.com',
-        phone: 'फोन: +91 9679164875'
+        phone: 'फोन: +91 75868 91753'
       },
 
 
@@ -559,7 +562,7 @@ const resources = {
         contactInfo: 'संपर्क जानकारी',
         copyright: 'कॉपीराइट © 2026 Pripriya Nursery. सर्वाधिकार सुरक्षित।',
         description: 'पूरे भारत में, विशेष रूप से उत्तर पूर्व में स्वस्थ, सावधानीपूर्वक पोषित पौधे वितरित करती है - जिस पर बागवानों, भूस्वामियों और पौधों के प्रेमियों का भरोसा है।',
-        address: 'भैरबस्थान, पुरबस्थली, पूर्बा बर्धमान - 713513',
+        address: 'सिमुलपुकुर, गंगाधर शिशु निकेतन, सिमुलपुकुर, उखरा, नदिया, पश्चिम बंगाल, 741257',
         quickLinksList: {
           terms: 'नियम और शर्तें',
           privacy: 'गोपनीयता नीति',
@@ -589,6 +592,9 @@ const resources = {
         moreToApply: 'लागू करने के लिए और',
         couponDiscount: 'कूपन छूट',
         processing: 'प्रक्रिया हो रही है...',
+        couponAlreadyUsed: 'आप इस कूपन का पहले ही उपयोग कर चुके हैं',
+        hideAddresses: 'छुपाएं',
+        selectAnotherAddress: 'कोई अन्य पता चुनें',
       },
     },
   },
@@ -622,7 +628,7 @@ const resources = {
         section6Title: 'আপনার অধিকার',
         section6Intro: 'আমাদের সাথে যোগাযোগ করে আপনি আপনার ব্যক্তিগত ডেটা অ্যাক্সেস, সংশোধন বা মুছে ফেলার অনুরোধ করতে পারেন:',
         email: 'ইমেইল: pripriyanursery@gmail.com',
-        phone: 'ফোন: +91 9679164875'
+        phone: 'ফোন: +91 75868 91753'
       },
       shipping: {
         title: 'শিপিং নীতি',
@@ -660,7 +666,7 @@ const resources = {
         section4Point2: 'রিফান্ডের সময়রেখা: 5-7 কার্যদিবস',
         section5Title: 'রিফান্ড সমস্যার জন্য যোগাযোগ',
         email: 'ইমেইল: pripriyanursery@gmail.com',
-        phone: 'ফোন: +91 9679164875'
+        phone: 'ফোন: +91 75868 91753'
       },
 
 
@@ -854,7 +860,7 @@ const resources = {
         contactInfo: 'যোগাযোগের তথ্য',
         copyright: 'কপিরাইট © 2026 Pripriya Nursery. সর্বস্বত্ব সংরক্ষিত।',
         description: 'সারা ভারত জুড়ে স্বাস্থ্যকর, যত্ন সহকারে লালনপালন করা গাছ সরবরাহ করে, বিশেষ করে উত্তর পূর্বে—বাগানকারী, ল্যান্ডস্কেপার এবং গাছপ্রেমীদের আস্থার প্রতীক।',
-        address: 'ভৈরবস্থান, পূর্বস্থলী, পূর্ব বর্ধমান - ৭১৩৫১৩',
+        address: 'শিমুলপুকুর, গঙ্গাধর শিশু নিকেতন, শিমুলপুকুর, উখড়া, নদীয়া, পশ্চিমবঙ্গ, ৭৪১২৫৭',
         quickLinksList: {
           terms: 'নিয়ম ও শর্তাবলী',
           privacy: 'গোপনীয়তা নীতি',
@@ -884,6 +890,9 @@ const resources = {
         moreToApply: 'প্রয়োগ করার জন্য আরও',
         couponDiscount: 'কুপন ছাড়',
         processing: 'প্রক্রিয়াকরণ হচ্ছে...',
+        couponAlreadyUsed: 'আপনি ইতিমধ্যে এই কুপনটি ব্যবহার করেছেন',
+        hideAddresses: 'লুকান',
+        selectAnotherAddress: 'অন্য ঠিকানা নির্বাচন করুন',
       },
     },
   },
@@ -916,3 +925,6 @@ const initI18n = async () => {
 initI18n();
 
 export default i18n;
+
+
+
