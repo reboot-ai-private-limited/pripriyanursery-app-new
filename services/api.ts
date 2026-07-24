@@ -5,7 +5,7 @@ const getBaseUrl = () => {
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }
-  return 'http://192.168.1.7:5000/api/v1';
+  return 'http://192.168.1.11:5000/api/v1';
 };
 
 export const API_BASE_URL = getBaseUrl();

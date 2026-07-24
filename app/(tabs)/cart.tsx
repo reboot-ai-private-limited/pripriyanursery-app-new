@@ -6,8 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Animated,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { BrandColors } from "@/constants/theme";
 import { useTranslation } from "react-i18next";
@@ -18,6 +19,10 @@ import { formatNumberByLang } from "@/services/localization";
 import { router } from "expo-router";
 
 export default function CartScreen() {
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + 128;
+  const scrollY = React.useRef(new Animated.Value(0)).current;
+
   const { t, i18n } = useTranslation();
   const lang = i18n.language || "en";
   const { cart, updateQuantity, removeFromCart } = useCart();
@@ -64,35 +69,45 @@ export default function CartScreen() {
 
   return (
     <View style={styles.container}>
-      <StorefrontHeader />
-      <Breadcrumbs
-        items={[{ label: t("cart.title", { defaultValue: "Cart" }) }]}
-      />
+      <StorefrontHeader scrollY={scrollY} />
 
       {cart.length === 0 ? (
-        <View style={styles.center}>
-          <IconSymbol name="cart.fill" size={64} color="#E5E7EB" />
-          <Text style={styles.emptyTitle}>
-            {t("cart.emptyTitle", { defaultValue: "Your cart is empty!" })}
-          </Text>
-          <Text style={styles.emptyDesc}>
-            {t("cart.emptyDesc", { defaultValue: "Add items to it now." })}
-          </Text>
-          <TouchableOpacity
-            style={styles.shopNowBtn}
-            onPress={() => router.push("/")}
-          >
-            <Text style={styles.shopNowText}>
-              {t("cart.shopNow", { defaultValue: "Shop Now" })}
+        <View style={[styles.center, { paddingTop: headerHeight }]}>
+          <Breadcrumbs
+            items={[{ label: t("cart.title", { defaultValue: "Cart" }) }]}
+          />
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <IconSymbol name="cart.fill" size={64} color="#E5E7EB" />
+            <Text style={styles.emptyTitle}>
+              {t("cart.emptyTitle", { defaultValue: "Your cart is empty!" })}
             </Text>
-          </TouchableOpacity>
+            <Text style={styles.emptyDesc}>
+              {t("cart.emptyDesc", { defaultValue: "Add items to it now." })}
+            </Text>
+            <TouchableOpacity
+              style={styles.shopNowBtn}
+              onPress={() => router.push("/")}
+            >
+              <Text style={styles.shopNowText}>
+                {t("cart.shopNow", { defaultValue: "Shop Now" })}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : (
         <>
-          <ScrollView
+          <Animated.ScrollView
             style={styles.scrollContent}
-            contentContainerStyle={styles.scrollPadding}
+            contentContainerStyle={[styles.scrollPadding, { paddingTop: headerHeight }]}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: false }
+            )}
+            scrollEventThrottle={16}
           >
+            <Breadcrumbs
+              items={[{ label: t("cart.title", { defaultValue: "Cart" }) }]}
+            />
             <Text style={styles.sectionTitle}>
               {t("cart.items", { defaultValue: "Cart Items" })} ({formatNumberByLang(cart.length, lang)})
             </Text>
@@ -234,7 +249,7 @@ export default function CartScreen() {
                 </Text>
               </View>
             </View>
-          </ScrollView>
+          </Animated.ScrollView>
 
           <View style={styles.bottomBar}>
             <View>

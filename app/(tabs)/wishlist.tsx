@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, FlatList, Animated } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BrandColors } from '@/constants/theme';
 import { useTranslation } from 'react-i18next';
@@ -10,32 +10,39 @@ import StorefrontHeader from '@/components/home/StorefrontHeader';
 import Breadcrumbs from '@/components/ui/Breadcrumbs';
 
 export default function WishlistScreen() {
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + 128;
+  const scrollY = React.useRef(new Animated.Value(0)).current;
+
   const { t } = useTranslation();
   const { wishlist } = useWishlist();
 
   return (
     <View style={styles.safeArea}>
-      <StorefrontHeader />
+      <StorefrontHeader scrollY={scrollY} />
       <View style={styles.container}>
-        <Breadcrumbs items={[{ label: t('wishlist.title', {defaultValue: 'My Wishlist'}) }]} />
-        
-        {wishlist.length === 0 ? (
-          <View style={styles.center}>
-            <IconSymbol name="heart.fill" size={64} color="#E5E7EB" />
-            <Text style={styles.emptyTitle}>{t('wishlist.emptyTitle', {defaultValue: 'Your wishlist is empty'})}</Text>
-            <Text style={styles.emptyDesc}>{t('wishlist.emptyDesc', {defaultValue: 'Save products you love to buy later!'})}</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={wishlist}
-            keyExtractor={(item) => item._id || item.id}
-            renderItem={({ item }) => <ProductCard product={item} />}
-            numColumns={2}
-            contentContainerStyle={styles.listContainer}
-            columnWrapperStyle={styles.row}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
+        <Animated.FlatList
+          data={wishlist}
+          keyExtractor={(item) => item._id || item.id}
+          renderItem={({ item }) => <ProductCard product={item} />}
+          numColumns={2}
+          contentContainerStyle={[styles.listContainer, { paddingTop: headerHeight }]}
+          columnWrapperStyle={styles.row}
+          showsVerticalScrollIndicator={false}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+          ListHeaderComponent={<Breadcrumbs items={[{ label: t('wishlist.title', {defaultValue: 'My Wishlist'}) }]} />}
+          ListEmptyComponent={() => (
+            <View style={styles.center}>
+              <IconSymbol name="heart.fill" size={64} color="#E5E7EB" />
+              <Text style={styles.emptyTitle}>{t('wishlist.emptyTitle', {defaultValue: 'Your wishlist is empty'})}</Text>
+              <Text style={styles.emptyDesc}>{t('wishlist.emptyDesc', {defaultValue: 'Save products you love to buy later!'})}</Text>
+            </View>
+          )}
+        />
       </View>
     </View>
   );

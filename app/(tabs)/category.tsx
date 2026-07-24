@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Modal, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Modal, Dimensions, Animated } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useRouter, useGlobalSearchParams, useLocalSearchParams } from 'expo-router';
 import { BrandColors } from '@/constants/theme';
@@ -12,6 +12,9 @@ import StorefrontHeader from '@/components/home/StorefrontHeader';
 import Breadcrumbs from '@/components/ui/Breadcrumbs';
 
 export default function CategoryScreen() {
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + 128;
+  const scrollY = React.useRef(new Animated.Value(0)).current;
   const router = useRouter();
   const globalParams = useGlobalSearchParams<{ category?: string, search?: string }>();
   const localParams = useLocalSearchParams<{ category?: string, search?: string }>();
@@ -134,17 +137,22 @@ export default function CategoryScreen() {
 
   return (
     <View style={styles.container}>
-      <StorefrontHeader />
+      <StorefrontHeader scrollY={scrollY} />
 
-      <FlatList
+      <Animated.FlatList
         data={products}
         extraData={{ lang: i18n.language, selectedCategory, sortBy }}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <ProductCard product={item} />}
         numColumns={2}
-        contentContainerStyle={[styles.prodListContainer, products.length === 0 && { flexGrow: 1 }]}
+        contentContainerStyle={[styles.prodListContainer, products.length === 0 && { flexGrow: 1 }, { paddingTop: headerHeight }]}
         columnWrapperStyle={styles.prodRow}
         showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
         ListHeaderComponent={headerElement}
         ListEmptyComponent={() => (
           !loading && products.length === 0 ? (
