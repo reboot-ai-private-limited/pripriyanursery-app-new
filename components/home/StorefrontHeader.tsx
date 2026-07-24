@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Platform, StatusBar, Modal, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Platform, StatusBar, Modal, Pressable, ActivityIndicator, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -11,12 +11,35 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import AccountDrawer from '@/components/AccountDrawer';
 
-export default function StorefrontHeader() {
+export default function StorefrontHeader({ scrollY }: { scrollY?: Animated.Value }) {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
   
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Search animation
+  const searchBarHeight = 50;
+  const clampedScrollY = scrollY ? scrollY.interpolate({ inputRange: [0, 10000], outputRange: [0, 10000], extrapolateLeft: 'clamp' }) : new Animated.Value(0);
+  const diffClamp = scrollY ? Animated.diffClamp(clampedScrollY, 0, searchBarHeight) : new Animated.Value(0);
+  
+  const searchHeight = diffClamp.interpolate({
+    inputRange: [0, searchBarHeight],
+    outputRange: [searchBarHeight, 0],
+    extrapolate: 'clamp',
+  });
+  
+  const searchOpacity = diffClamp.interpolate({
+    inputRange: [0, searchBarHeight],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      router.push(`/category?category=all&search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
   
   const currentLang = (i18n.language || 'en').toUpperCase();
   const [langModalVisible, setLangModalVisible] = useState(false);
@@ -38,7 +61,7 @@ export default function StorefrontHeader() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, !!scrollY && styles.safeAreaAbsolute]}>
       <View style={styles.container}>
         {/* Top Brand & Icons Row */}
         <View style={styles.topRow}>
@@ -73,16 +96,20 @@ export default function StorefrontHeader() {
         </View>
 
         {/* Search Bar Row */}
-        <View style={styles.searchContainer}>
-          <IconSymbol name="magnifyingglass" size={18} color="#9CA3AF" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search plants, grafted fruit trees, pots..."
-            placeholderTextColor="#9CA3AF"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
+        <Animated.View style={{ height: searchHeight, opacity: searchOpacity, overflow: 'hidden' }}>
+          <View style={styles.searchContainer}>
+            <IconSymbol name="magnifyingglass" size={18} color="#9CA3AF" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search plants, grafted fruit trees, pots..."
+              placeholderTextColor="#9CA3AF"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onSubmitEditing={handleSearch}
+              returnKeyType="search"
+            />
+          </View>
+        </Animated.View>
       </View>
 
       {/* Language Selection Modal */}
@@ -147,6 +174,13 @@ const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: '#FFFFFF',
   },
+  safeAreaAbsolute: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
+  },
   container: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
@@ -209,16 +243,11 @@ const styles = StyleSheet.create({
     gap: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    shadowColor: BrandColors.primary,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
   },
   searchInput: {
     flex: 1,
     height: 36,
-    fontSize: 13,
+    fontSize: 15,
     color: BrandColors.dark,
     padding: 0,
   },

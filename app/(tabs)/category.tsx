@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Modal, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useGlobalSearchParams, useLocalSearchParams } from 'expo-router';
 import { BrandColors } from '@/constants/theme';
 import { shopApi, Category, Product, mapProduct } from '@/services/api';
 import ProductCard from '@/components/product/ProductCard';
@@ -13,7 +13,10 @@ import Breadcrumbs from '@/components/ui/Breadcrumbs';
 
 export default function CategoryScreen() {
   const router = useRouter();
-  const { category: categoryParam } = useLocalSearchParams<{ category: string }>();
+  const globalParams = useGlobalSearchParams<{ category?: string, search?: string }>();
+  const localParams = useLocalSearchParams<{ category?: string, search?: string }>();
+  const categoryParam = localParams.category || globalParams.category;
+  const search = localParams.search || globalParams.search;
   const { t, i18n } = useTranslation();
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -33,7 +36,7 @@ export default function CategoryScreen() {
 
   useEffect(() => {
     fetchData();
-  }, [selectedCategory, sortBy]);
+  }, [selectedCategory, sortBy, search]);
 
   const fetchData = async () => {
     try {
@@ -53,6 +56,10 @@ export default function CategoryScreen() {
         const cat = currentCategories.find(c => c._id === selectedCategory);
         const slug = cat ? cat.slug : selectedCategory; 
         url = `/products/category/${slug}?limit=100`;
+      }
+      
+      if (search) {
+        url += `&search=${encodeURIComponent(search)}`;
       }
       
       const prodRes = await shopApi.get(url).catch(() => ({ data: { data: {} } }));

@@ -1,5 +1,6 @@
-import React from 'react';
-import { StyleSheet, ScrollView, View, Text } from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet, ScrollView, View, Text, Animated } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import StorefrontHeader from '@/components/home/StorefrontHeader';
 import HeroSection from '@/components/home/HeroSection';
 import CategorySection from '@/components/home/CategorySection';
@@ -10,16 +11,26 @@ import Footer from '@/components/layout/Footer';
 import { BrandColors } from '@/constants/theme';
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
+  // Header total static height = 8 (pt) + 58 (topRow) + 50 (search) + 12 (pb) = 128
+  const headerHeight = insets.top + 128;
+  const scrollY = useRef(new Animated.Value(0)).current;
+
   return (
     <View style={styles.container}>
       {/* Sticky Top Storefront Header */}
-      <StorefrontHeader />
+      <StorefrontHeader scrollY={scrollY} />
 
       {/* Main Homepage Scrollable Content */}
-      <ScrollView
+      <Animated.ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: headerHeight }]}
         showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
       >
         {/* 1. Hero Sliders Carousel */}
         <HeroSection />
@@ -38,7 +49,7 @@ export default function HomeScreen() {
         
         {/* Footer */}
         <Footer />
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 }
