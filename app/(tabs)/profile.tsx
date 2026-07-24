@@ -12,6 +12,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { formatNumberByLang } from '@/services/localization';
 import { useAuth } from '@/contexts/AuthContext';
 import { BrandColors } from '@/constants/theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -20,6 +22,7 @@ import { shopApi } from '@/services/api';
 export default function ProfileScreen() {
   const { user, login, token, logout, isAuthenticated } = useAuth();
   const router = useRouter();
+  const { t, i18n } = useTranslation();
 
   // Profile Edit States
   const [name, setName] = useState('');
@@ -35,36 +38,39 @@ export default function ProfileScreen() {
   const [deleteError, setDeleteError] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Set initial values from user context, but only if not currently editing
   useEffect(() => {
-    if (user) {
+    if (user && !isEditingName && !isEditingEmail) {
       setName(user.name || '');
       setEmail(user.email || '');
     }
-    
-    // Fetch latest user data to ensure email and details are perfectly synced
+  }, [user, isEditingName, isEditingEmail]);
+
+  // Fetch latest user data once on mount to ensure email and details are synced
+  useEffect(() => {
     if (isAuthenticated) {
       shopApi.get('/users/me').then((res) => {
         const data = res.data?.data || res.data;
         if (data) {
-          setName(data.name || '');
-          setEmail(data.email || '');
+          if (!isEditingName) setName(data.name || '');
+          if (!isEditingEmail) setEmail(data.email || '');
           if (token) {
             login(token, data); // update context silently with correct object
           }
         }
       }).catch(() => {});
     }
-  }, [user, isAuthenticated]);
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.center}>
           <IconSymbol name="person.crop.circle.fill.badge.xmark" size={64} color="#9CA3AF" />
-          <Text style={styles.title}>Not Logged In</Text>
-          <Text style={styles.subtitle}>Please login to view your profile</Text>
+          <Text style={styles.title}>{t('profile.notLoggedIn', 'Not Logged In')}</Text>
+          <Text style={styles.subtitle}>{t('profile.pleaseLogin', 'Please login to view your profile')}</Text>
           <TouchableOpacity style={styles.primaryBtn} onPress={() => router.push('/login')}>
-            <Text style={styles.primaryBtnText}>Login Now</Text>
+            <Text style={styles.primaryBtnText}>{t('profile.loginNow', 'Login Now')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -80,20 +86,20 @@ export default function ProfileScreen() {
       }
       setIsEditingName(false);
       setIsEditingEmail(false);
-      Alert.alert('Success', 'Profile updated successfully!');
+      Alert.alert(t('profile.success', 'Success'), t('profile.profileUpdated', 'Profile updated successfully!'));
     } catch (error: any) {
-      const msg = error.response?.data?.message || 'Failed to update profile';
-      Alert.alert('Error', msg);
+      const msg = error.response?.data?.message || t('profile.failedUpdate', 'Failed to update profile');
+      Alert.alert(t('profile.error', 'Error'), msg);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('profile.logout', 'Logout'), t('profile.confirmLogout', 'Are you sure you want to logout?'), [
+      { text: t('profile.cancel', 'Cancel'), style: 'cancel' },
       { 
-        text: 'Logout', 
+        text: t('profile.logout', 'Logout'), 
         style: 'destructive',
         onPress: async () => {
           await logout();
@@ -109,9 +115,9 @@ export default function ProfileScreen() {
       setDeleteError('');
       await shopApi.post('/users/me/delete-request');
       setDeleteOtpSent(true);
-      Alert.alert('OTP Sent', 'An OTP has been sent to your mobile number.');
+      Alert.alert(t('profile.otpSent', 'OTP Sent'), t('profile.otpSentMsg', 'An OTP has been sent to your mobile number.'));
     } catch (err: any) {
-      setDeleteError(err.response?.data?.message || 'Failed to send OTP');
+      setDeleteError(err.response?.data?.message || t('profile.failedSendOtp', 'Failed to send OTP'));
     } finally {
       setIsDeleting(false);
     }
@@ -119,7 +125,7 @@ export default function ProfileScreen() {
 
   const handleConfirmDelete = async () => {
     if (deleteOtp.length !== 6) {
-      setDeleteError('Please enter a valid 6-digit OTP');
+      setDeleteError(t('profile.invalidOtp', 'Please enter a valid 6-digit OTP'));
       return;
     }
     
@@ -127,12 +133,12 @@ export default function ProfileScreen() {
       setIsDeleting(true);
       setDeleteError('');
       await shopApi.delete('/users/me/delete', { data: { otp: deleteOtp } });
-      Alert.alert('Success', 'Account successfully deleted');
+      Alert.alert(t('profile.success', 'Success'), t('profile.accountDeleted', 'Account successfully deleted'));
       setDeleteModalOpen(false);
       await logout();
       router.replace('/');
     } catch (err: any) {
-      setDeleteError(err.response?.data?.message || 'Failed to delete account');
+      setDeleteError(err.response?.data?.message || t('profile.failedDelete', 'Failed to delete account'));
     } finally {
       setIsDeleting(false);
     }
@@ -141,24 +147,24 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Account Settings</Text>
+        <Text style={styles.headerTitle}>{t('profile.accountSettings', 'Account Settings')}</Text>
       </View>
       
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Personal Information</Text>
+          <Text style={styles.sectionTitle}>{t('profile.personalInfo', 'Personal Information')}</Text>
 
           {/* Full Name */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Full Name</Text>
+            <Text style={styles.label}>{t('profile.fullName', 'Full Name')}</Text>
             <View style={[styles.inputRow, isEditingName && styles.inputRowActive]}>
               <TextInput
                 style={styles.input}
                 value={name}
                 editable={isEditingName}
                 onChangeText={setName}
-                placeholder="Your Full Name"
+                placeholder={t('profile.yourFullName', 'Your Full Name')}
                 placeholderTextColor="#9CA3AF"
               />
               <TouchableOpacity 
@@ -172,11 +178,11 @@ export default function ProfileScreen() {
 
           {/* Phone Number (Read Only) */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Mobile Number</Text>
+            <Text style={styles.label}>{t('profile.mobileNumber', 'Mobile Number')}</Text>
             <View style={[styles.inputRow, { opacity: 0.8 }]}>
               <TextInput
                 style={styles.input}
-                value={user?.phone || 'No phone number'}
+                value={user?.phone || t('profile.noPhoneNumber', 'No phone number')}
                 editable={false}
               />
               <View style={styles.editIconBtn}>
@@ -187,14 +193,14 @@ export default function ProfileScreen() {
 
           {/* Email */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email Address</Text>
+            <Text style={styles.label}>{t('profile.emailAddress', 'Email Address')}</Text>
             <View style={[styles.inputRow, isEditingEmail && styles.inputRowActive]}>
               <TextInput
                 style={styles.input}
                 value={email}
                 editable={isEditingEmail}
                 onChangeText={setEmail}
-                placeholder="Your Email Address"
+                placeholder={t('profile.yourEmailAddress', 'Your Email Address')}
                 placeholderTextColor="#9CA3AF"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -217,7 +223,7 @@ export default function ProfileScreen() {
             {isSaving ? (
               <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
-              <Text style={styles.saveBtnText}>Save Changes</Text>
+              <Text style={styles.saveBtnText}>{t('profile.saveChanges', 'Save Changes')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -233,7 +239,7 @@ export default function ProfileScreen() {
               setDeleteModalOpen(true);
             }}
           >
-            <Text style={styles.deleteAccountText}>Delete Account</Text>
+            <Text style={styles.deleteAccountText}>{t('profile.deleteAccount', 'Delete Account')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -249,14 +255,14 @@ export default function ProfileScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Delete Account</Text>
+              <Text style={styles.modalTitle}>{t('profile.deleteAccount', 'Delete Account')}</Text>
               <TouchableOpacity onPress={() => setDeleteModalOpen(false)}>
                 <IconSymbol name="xmark" size={24} color="#9CA3AF" />
               </TouchableOpacity>
             </View>
 
             <Text style={styles.modalWarning}>
-              Are you sure you want to delete your account? This action cannot be undone and you will lose all your data, orders, and wishlist.
+              {t('profile.deleteWarning', 'Are you sure you want to delete your account? This action cannot be undone and you will lose all your data, orders, and wishlist.')}
             </Text>
 
             {deleteError ? <Text style={styles.errorText}>{deleteError}</Text> : null}
@@ -270,12 +276,12 @@ export default function ProfileScreen() {
                 {isDeleting ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
-                  <Text style={styles.requestOtpText}>Send OTP to Mobile</Text>
+                  <Text style={styles.requestOtpText}>{t('profile.sendOtp', 'Send OTP to Mobile')}</Text>
                 )}
               </TouchableOpacity>
             ) : (
               <View style={styles.otpSection}>
-                <Text style={styles.otpLabel}>Enter 6-digit OTP sent to your phone</Text>
+                <Text style={styles.otpLabel}>{t('profile.enterOtp', 'Enter 6-digit OTP sent to your phone')}</Text>
                 <TextInput
                   style={styles.otpInput}
                   value={deleteOtp}
@@ -294,7 +300,7 @@ export default function ProfileScreen() {
                   {isDeleting ? (
                     <ActivityIndicator color="#FFFFFF" size="small" />
                   ) : (
-                    <Text style={styles.confirmDeleteText}>Confirm Deletion</Text>
+                    <Text style={styles.confirmDeleteText}>{t('profile.confirmDeletion', 'Confirm Deletion')}</Text>
                   )}
                 </TouchableOpacity>
               </View>

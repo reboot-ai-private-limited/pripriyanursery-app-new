@@ -15,6 +15,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BrandColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
@@ -27,6 +28,7 @@ export default function AccountDrawer({ visible, onClose }: AccountDrawerProps) 
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   
   const slideAnim = useRef(new Animated.Value(width)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -111,7 +113,7 @@ export default function AccountDrawer({ visible, onClose }: AccountDrawerProps) 
           ]}
         >
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Menu</Text>
+            <Text style={styles.headerTitle}>{t('common.menu', 'Menu')}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <IconSymbol name="xmark" size={24} color="#4B5563" />
             </TouchableOpacity>
@@ -131,33 +133,39 @@ export default function AccountDrawer({ visible, onClose }: AccountDrawerProps) 
             <View style={styles.menuLinks}>
               <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('/(tabs)')}>
                 <IconSymbol name="house.fill" size={24} color={BrandColors.dark} />
-                <Text style={styles.menuText}>Home</Text>
+                <Text style={styles.menuText}>{t('common.home', 'Home')}</Text>
                 <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('/(tabs)/category')}>
                 <IconSymbol name="list.bullet" size={24} color={BrandColors.dark} />
-                <Text style={styles.menuText}>Categories</Text>
+                <Text style={styles.menuText}>{t('common.categories', 'Categories')}</Text>
                 <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('/(tabs)/wishlist')}>
                 <IconSymbol name="heart.fill" size={24} color={BrandColors.dark} />
-                <Text style={styles.menuText}>Wishlist</Text>
+                <Text style={styles.menuText}>{t('common.wishlist', 'Wishlist')}</Text>
                 <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
               </TouchableOpacity>
               
               {isAuthenticated && (
                 <>
-                  <TouchableOpacity style={styles.menuItem} onPress={() => { onClose(); Alert.alert('My Orders', 'Coming soon!'); }}>
+                  <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('/orders')}>
                     <IconSymbol name="cube.box" size={24} color={BrandColors.dark} />
-                    <Text style={styles.menuText}>My Orders</Text>
+                    <Text style={styles.menuText}>{t('common.myOrders', 'My Orders')}</Text>
                     <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={() => handleNavigation('/(tabs)/profile')}>
+                  <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('/(tabs)/profile')}>
                     <IconSymbol name="person.crop.circle.fill" size={24} color={BrandColors.dark} />
-                    <Text style={styles.menuText}>Account Settings</Text>
+                    <Text style={styles.menuText}>{t('common.accountSettings', 'Account Settings')}</Text>
+                    <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]} onPress={() => handleNavigation('/addresses')}>
+                    <IconSymbol name="location" size={24} color={BrandColors.dark} />
+                    <Text style={styles.menuText}>{t('common.manageAddress', 'Address Management')}</Text>
                     <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
                   </TouchableOpacity>
                 </>
@@ -170,12 +178,12 @@ export default function AccountDrawer({ visible, onClose }: AccountDrawerProps) 
             {isAuthenticated ? (
               <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
                 <IconSymbol name="arrow.right.square" size={20} color={BrandColors.red} />
-                <Text style={styles.logoutText}>Logout</Text>
+                <Text style={styles.logoutText}>{t('common.logout', 'Logout')}</Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity style={styles.loginActionBtn} onPress={() => handleNavigation('/login')}>
                 <IconSymbol name="person.crop.circle.fill" size={20} color="#FFFFFF" />
-                <Text style={styles.loginBtnText}>Login / Register</Text>
+                <Text style={styles.loginBtnText}>{t('common.login', 'Login / Register')}</Text>
               </TouchableOpacity>
             )}
           </View>

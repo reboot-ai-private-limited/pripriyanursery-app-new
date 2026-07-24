@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, Stack } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useTranslation } from 'react-i18next';
 import { BrandColors } from '@/constants/theme';
 import { shopApi } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +22,7 @@ interface Address {
 }
 
 export default function AddressesScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
@@ -209,7 +211,7 @@ export default function AddressesScreen() {
     <View style={styles.card}>
       {item.isDefault && (
         <View style={styles.defaultBadge}>
-          <Text style={styles.defaultText}>Default</Text>
+          <Text style={styles.defaultText}>{t('common.default', 'Default')}</Text>
         </View>
       )}
       
@@ -226,7 +228,7 @@ export default function AddressesScreen() {
       <View style={styles.actions}>
         {!item.isDefault && (
           <TouchableOpacity style={styles.actionBtn} onPress={() => handleSetDefault(item._id)}>
-            <Text style={styles.actionText}>Set as Default</Text>
+            <Text style={styles.actionText}>{t('common.setDefault', 'Set as Default')}</Text>
           </TouchableOpacity>
         )}
         <View style={styles.actionGroup}>
@@ -249,7 +251,7 @@ export default function AddressesScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <IconSymbol name="chevron.left" size={24} color={BrandColors.dark} />
         </TouchableOpacity>
-        <Text style={styles.title}>My Addresses</Text>
+        <Text style={styles.title}>{t('address.manageAddress', 'My Addresses')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -266,7 +268,7 @@ export default function AddressesScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <IconSymbol name="location" size={48} color="#D1D5DB" />
-              <Text style={styles.emptyText}>No addresses found</Text>
+              <Text style={styles.emptyText}>{t('checkout.noAddresses', 'No addresses found')}</Text>
             </View>
           }
         />
@@ -281,7 +283,7 @@ export default function AddressesScreen() {
           }}
         >
           <IconSymbol name="plus" size={20} color="#FFFFFF" />
-          <Text style={styles.addBtnText}>Add New Address</Text>
+          <Text style={styles.addBtnText}>{t('address.addAddress', 'Add New Address')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -292,37 +294,37 @@ export default function AddressesScreen() {
         >
           <SafeAreaView style={{ flex: 1 }}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{editingId ? 'Edit Address' : 'Add New Address'}</Text>
+              <Text style={styles.modalTitle}>{editingId ? t('common.edit', 'Edit Address') : t('address.addAddress', 'Add New Address')}</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
                 <IconSymbol name="xmark" size={24} color="#4B5563" />
               </TouchableOpacity>
             </View>
             <ScrollView style={styles.formContainer} contentContainerStyle={{ paddingBottom: 40 }}>
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Full Name *</Text>
-                <TextInput style={styles.input} value={formData.fullName} onChangeText={t => setFormData({...formData, fullName: t})} placeholder="John Doe" />
+                <Text style={styles.label}>{t('address.name', 'Full Name')} *</Text>
+                <TextInput style={styles.input} value={formData.fullName} onChangeText={t => setFormData({...formData, fullName: t})} placeholder={t('address.name', 'Full Name')} />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Phone Number *</Text>
-                <TextInput style={styles.input} value={formData.phone} onChangeText={t => setFormData({...formData, phone: t})} placeholder="10-digit mobile number" keyboardType="phone-pad" />
+                <Text style={styles.label}>{t('account.mobileNumber', 'Phone Number')} *</Text>
+                <TextInput style={styles.input} value={formData.phone} onChangeText={t => setFormData({...formData, phone: t})} placeholder={t('address.tenDigits', '10 digits')} keyboardType="phone-pad" />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Address Line 1 *</Text>
-                <TextInput style={styles.input} value={formData.addressLine1} onChangeText={t => setFormData({...formData, addressLine1: t})} placeholder="House No, Building, Street" />
+                <Text style={styles.label}>{t('address.areaStreet', 'Address Line 1')} *</Text>
+                <TextInput style={styles.input} value={formData.addressLine1} onChangeText={t => setFormData({...formData, addressLine1: t})} placeholder={t('address.areaStreet', 'Address Line 1')} />
               </View>
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Address Line 2</Text>
-                <TextInput style={styles.input} value={formData.addressLine2} onChangeText={t => setFormData({...formData, addressLine2: t})} placeholder="Locality, Area (Optional)" />
+                <Text style={styles.label}>{t('address.areaStreet', 'Address Line 2')} 2</Text>
+                <TextInput style={styles.input} value={formData.addressLine2} onChangeText={t => setFormData({...formData, addressLine2: t})} placeholder={t('address.localityOptional', 'Locality (Optional)')} />
               </View>
               
               <View style={styles.row}>
                 <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                  <Text style={styles.label}>City *</Text>
-                  <TextInput style={styles.input} value={formData.city} onChangeText={t => setFormData({...formData, city: t})} placeholder="City" />
+                  <Text style={styles.label}>{t('address.city', 'City')} *</Text>
+                  <TextInput style={styles.input} value={formData.city} onChangeText={t => setFormData({...formData, city: t})} placeholder={t('address.city', 'City')} />
                 </View>
                 <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                  <Text style={styles.label}>Postal Code *</Text>
-                  <TextInput style={styles.input} value={formData.postalCode} onChangeText={t => setFormData({...formData, postalCode: t.replace(/\D/g, '').slice(0,6)})} placeholder="PIN Code" keyboardType="numeric" />
+                  <Text style={styles.label}>{t('address.pinCode', 'Postal Code')} *</Text>
+                  <TextInput style={styles.input} value={formData.postalCode} onChangeText={t => setFormData({...formData, postalCode: t.replace(/\D/g, '').slice(0,6)})} placeholder={t('address.pinCode', 'PIN Code')} keyboardType="numeric" />
                   {serviceabilityLoading && (
                     <Text style={{ fontSize: 11, color: BrandColors.primary, marginTop: 4 }}>Checking...</Text>
                   )}
@@ -336,21 +338,27 @@ export default function AddressesScreen() {
               </View>
               
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>State *</Text>
-                <TextInput style={styles.input} value={formData.state} onChangeText={t => setFormData({...formData, state: t})} placeholder="State" />
+                <Text style={styles.label}>{t('address.state', 'State')} *</Text>
+                <TextInput style={styles.input} value={formData.state} onChangeText={t => setFormData({...formData, state: t})} placeholder={t('address.state', 'State')} />
               </View>
 
-              <TouchableOpacity 
-                style={[styles.saveBtn, (saving || serviceabilityLoading || isServiceable === false) && { opacity: 0.7 }]} 
-                onPress={handleSave}
-                disabled={saving || serviceabilityLoading || isServiceable === false}
-              >
-                {saving ? (
-                  <ActivityIndicator color="#FFF" />
-                ) : (
-                  <Text style={styles.saveBtnText}>Save Address</Text>
-                )}
-              </TouchableOpacity>
+              {(() => {
+                const isFormValid = formData.fullName && formData.phone.length === 10 && formData.addressLine1 && formData.city && formData.state && formData.postalCode.length === 6 && isServiceable;
+                const isDisabled = saving || serviceabilityLoading || !isFormValid;
+                return (
+                  <TouchableOpacity 
+                    style={[styles.saveBtn, isDisabled && { opacity: 0.5, backgroundColor: '#9CA3AF' }]} 
+                    onPress={handleSave}
+                    disabled={isDisabled}
+                  >
+                    {saving ? (
+                      <ActivityIndicator color="#FFF" />
+                    ) : (
+                      <Text style={styles.saveBtnText}>{t('checkout.saveAddress', 'Save Address')}</Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })()}
             </ScrollView>
           </SafeAreaView>
         </KeyboardAvoidingView>

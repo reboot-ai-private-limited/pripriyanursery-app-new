@@ -4,7 +4,7 @@
     "slug": "pripriya-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/blank.png",
+    "icon": "./assets/images/appIcon.avif",
     "scheme": "pripriyaapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,21 +14,21 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
-        "foregroundImage": "./assets/images/blank.png"
+        "foregroundImage": "./assets/images/appIcon.avif"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/blank.png"
+      "favicon": "./assets/images/appIcon.avif"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/blank.png",
+          "image": "./assets/images/appIcon.avif",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",

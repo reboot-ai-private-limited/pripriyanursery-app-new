@@ -47,7 +47,6 @@ export default function StorefrontHeader() {
               source={require('@/assets/images/logo.svg')}
               style={styles.logo}
               contentFit="contain"
-              tintColor={BrandColors.primary}
             />
           </View>
 

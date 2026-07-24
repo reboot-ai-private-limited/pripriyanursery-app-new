@@ -14,7 +14,7 @@ import Breadcrumbs from '@/components/ui/Breadcrumbs';
 export default function CategoryScreen() {
   const router = useRouter();
   const { category: categoryParam } = useLocalSearchParams<{ category: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -92,7 +92,7 @@ export default function CategoryScreen() {
           )}
         </View>
         <Text style={[styles.catName, isSelected && styles.catNameSelected]} numberOfLines={2}>
-          {item.name}
+          {item._id === 'all' ? t('common.allProducts', { defaultValue: 'All Products' }) : (item as any).translations?.name?.[i18n.language] || item.name}
         </Text>
       </TouchableOpacity>
     );
@@ -103,15 +103,16 @@ export default function CategoryScreen() {
       <Breadcrumbs items={[{ label: t('common.products', {defaultValue: 'Products'}) }]} />
 
       <View style={styles.categoriesWrapper}>
-        <FlatList
-          ref={flatListRef}
-          data={categories}
-          keyExtractor={(item) => item._id || Math.random().toString()}
-          renderItem={renderCategory}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.catListContainer}
-        />
+          <FlatList
+            ref={flatListRef}
+            data={categories}
+            extraData={{ lang: i18n.language, selectedCategory }}
+            keyExtractor={(item) => item._id || Math.random().toString()}
+            renderItem={renderCategory}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.catListContainer}
+          />
       </View>
 
       <View style={styles.filterBar}>
@@ -130,6 +131,7 @@ export default function CategoryScreen() {
 
       <FlatList
         data={products}
+        extraData={{ lang: i18n.language, selectedCategory, sortBy }}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <ProductCard product={item} />}
         numColumns={2}
