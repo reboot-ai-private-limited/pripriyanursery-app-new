@@ -8,7 +8,8 @@ import {
   TouchableOpacity, 
   TouchableWithoutFeedback, 
   Dimensions,
-  Alert
+  Alert,
+  ScrollView
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -121,7 +122,11 @@ export default function AccountDrawer({ visible, onClose }: AccountDrawerProps) 
             </TouchableOpacity>
           </View>
           
-          <View style={styles.content}>
+          <ScrollView 
+            style={styles.content} 
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 20 }}
+            showsVerticalScrollIndicator={false}
+          >
             {/* User Header - Only show if logged in */}
             {isAuthenticated && !!token && user && (
               <View style={styles.userHeader}>
@@ -194,7 +199,7 @@ export default function AccountDrawer({ visible, onClose }: AccountDrawerProps) 
                 <Text style={styles.loginBtnText}>{t('common.login', 'Login / Register')}</Text>
               </TouchableOpacity>
             )}
-          </View>
+          </ScrollView>
         </Animated.View>
       </View>
 

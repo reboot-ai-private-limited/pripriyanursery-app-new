@@ -43,6 +43,7 @@ const MAPPING: Record<string, ComponentProps<typeof MaterialIcons>['name']> = {
   'minus': 'remove',
   'trash.fill': 'delete',
   'checkmark.circle.fill': 'check-circle',
+  'cart.badge.plus': 'add-shopping-cart',
 };
 
 /**
