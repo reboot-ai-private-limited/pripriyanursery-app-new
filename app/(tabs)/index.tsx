@@ -5,6 +5,7 @@ import StorefrontHeader from '@/components/home/StorefrontHeader';
 import HeroSection from '@/components/home/HeroSection';
 import CategorySection from '@/components/home/CategorySection';
 import FreshProduceSection from '@/components/home/FreshProduceSection';
+import WholesaleBanner from '@/components/home/WholesaleBanner';
 import DynamicProductSections from '@/components/home/DynamicProductSections';
 import FeatureSection from '@/components/home/FeatureSection';
 import Footer from '@/components/layout/Footer';
@@ -52,6 +53,9 @@ export default function HomeScreen() {
 
         {/* 3. Fresh Produce Product Grid */}
         <FreshProduceSection onLoaded={() => setFreshLoaded(true)} />
+
+        {/* 3.5 Wholesale Banner */}
+        <WholesaleBanner />
 
         {/* 4. Dynamic Product Sections (Best Sellers / Categories + Galleries) */}
         <DynamicProductSections />

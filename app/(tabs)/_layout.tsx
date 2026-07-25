@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -14,6 +15,7 @@ export default function TabLayout() {
   const { t } = useTranslation();
   const { wishlist } = useWishlist();
   const { cart } = useCart();
+  const insets = useSafeAreaInsets();
   const wishlistCount = wishlist.length;
   const cartCount = cart.length;
 
@@ -27,8 +29,8 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: BrandColors.primary,
           borderTopWidth: 0,
-          height: 60,
-          paddingBottom: 8,
+          height: 60 + insets.bottom,
+          paddingBottom: 8 + insets.bottom,
           paddingTop: 8,
         },
         tabBarLabelStyle: {

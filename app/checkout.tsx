@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image, Alert, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image, Alert, TextInput, Modal } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -16,12 +16,14 @@ export default function CheckoutScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const lang = i18n.language || 'en';
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, token } = useAuth();
   const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
 
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
+  const [successData, setSuccessData] = useState<{ visible: boolean; orderId: string } | null>(null);
+  const insets = useSafeAreaInsets();
 
   // Address
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -95,7 +97,7 @@ export default function CheckoutScreen() {
 
   useEffect(() => {
     setMounted(true);
-    if (isAuthenticated === false) {
+    if (!isAuthenticated || !token) {
       Alert.alert('Login Required', 'You must be logged in to checkout.', [
         { text: 'Login', onPress: () => router.replace('/login') },
         { text: 'Cancel', onPress: () => router.back(), style: 'cancel' }
@@ -287,7 +289,9 @@ export default function CheckoutScreen() {
         appliedCoupon: appliedCoupon?.code,
         isCartCheckout: true,
       });
-      const orderId = orderRes.data?.data?.orderId;
+      const orderData = orderRes.data?.data;
+      const orderId = orderData?.orderId;
+      const customOrderId = orderData?.customOrderId || orderId;
       if (!orderId) throw new Error(t('checkout.failedCreateOrder', 'Failed to create order'));
 
       // 2. Online Payment (Razorpay)
@@ -323,8 +327,7 @@ export default function CheckoutScreen() {
                   text: 'Simulate Success', 
                   onPress: () => {
                     clearCart();
-                    Alert.alert('Success', t('checkout.paymentSuccess', 'Payment successful! Order placed.'));
-                    router.replace('/(tabs)');
+                    setSuccessData({ visible: true, orderId: customOrderId });
                   } 
                 }
               ]
@@ -345,8 +348,7 @@ export default function CheckoutScreen() {
         });
 
         clearCart();
-        Alert.alert('Success', t('checkout.paymentSuccess', 'Payment successful! Order placed.'));
-        router.replace('/(tabs)');
+        setSuccessData({ visible: true, orderId: customOrderId });
       } catch (err: any) {
         Alert.alert('Payment Failed', err.description || err.message || 'Payment was cancelled or failed');
       }
@@ -361,7 +363,7 @@ export default function CheckoutScreen() {
   if (!mounted || isAuthenticated === false) return null;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
@@ -668,7 +670,7 @@ export default function CheckoutScreen() {
       </ScrollView>
 
       {/* Bottom Bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
         <View>
           <Text style={styles.bottomBarTotalLabel}>{t('cart.totalAmount', 'Total Amount')}</Text>
           <Text style={styles.bottomBarTotalValue}>₹{formatNumberByLang(finalTotal, lang)}</Text>
@@ -688,6 +690,52 @@ export default function CheckoutScreen() {
           )}
         </TouchableOpacity>
       </View>
+
+      {/* Payment Success Modal */}
+      <Modal visible={!!successData?.visible} animationType="slide" transparent={false}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#F9FAFB', justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: '#FFF', padding: 32, borderRadius: 24, width: '100%', maxWidth: 400, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 10 }}>
+            <View style={{ marginBottom: 24 }}>
+              <IconSymbol name="checkmark.circle.fill" size={80} color="#22C55E" />
+            </View>
+            <Text style={{ fontSize: 28, fontWeight: '800', color: BrandColors.dark, marginBottom: 12, textAlign: 'center' }}>
+              Payment Successful!
+            </Text>
+            {!!successData?.orderId && (
+              <View style={{ backgroundColor: '#ECFDF5', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#D1FAE5', marginBottom: 24 }}>
+                <Text style={{ color: '#065F46', fontSize: 16, fontWeight: '700' }}>Order ID: {successData.orderId}</Text>
+              </View>
+            )}
+            <Text style={{ fontSize: 16, color: '#6B7280', textAlign: 'center', marginBottom: 32, lineHeight: 24 }}>
+              Thank you for your order! Your payment has been securely processed and your order is now confirmed. We will notify you once it ships.
+            </Text>
+            
+            <View style={{ width: '100%', gap: 12 }}>
+              <TouchableOpacity 
+                style={{ backgroundColor: BrandColors.primary, width: '100%', paddingVertical: 16, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                onPress={() => {
+                  setSuccessData(null);
+                  router.replace('/orders');
+                }}
+              >
+                <FontAwesome5 name="shopping-bag" size={20} color="#FFF" />
+                <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '700' }}>View My Orders</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={{ backgroundColor: '#F3F4F6', width: '100%', paddingVertical: 16, borderRadius: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+                onPress={() => {
+                  setSuccessData(null);
+                  router.replace('/(tabs)');
+                }}
+              >
+                <Text style={{ color: BrandColors.dark, fontSize: 16, fontWeight: '700' }}>Continue Shopping</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
     </SafeAreaView>
   );
 }

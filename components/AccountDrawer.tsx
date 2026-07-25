@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BrandColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import WholesaleFormModal from '@/components/home/WholesaleFormModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
@@ -26,13 +27,14 @@ interface AccountDrawerProps {
 
 export default function AccountDrawer({ visible, onClose }: AccountDrawerProps) {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, token, isAuthenticated, logout } = useAuth();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   
   const slideAnim = useRef(new Animated.Value(width)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [isModalVisible, setIsModalVisible] = useState(visible);
+  const [wholesaleVisible, setWholesaleVisible] = useState(false);
   
   useEffect(() => {
     if (visible) {
@@ -121,7 +123,7 @@ export default function AccountDrawer({ visible, onClose }: AccountDrawerProps) 
           
           <View style={styles.content}>
             {/* User Header - Only show if logged in */}
-            {isAuthenticated && user && (
+            {isAuthenticated && !!token && user && (
               <View style={styles.userHeader}>
                 <IconSymbol name="person.crop.circle.fill" size={60} color={BrandColors.primary} />
                 <Text style={styles.userName} numberOfLines={1}>{user?.name || 'User'}</Text>
@@ -143,13 +145,19 @@ export default function AccountDrawer({ visible, onClose }: AccountDrawerProps) 
                 <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
               </TouchableOpacity>
 
+              <TouchableOpacity style={styles.menuItem} onPress={() => setWholesaleVisible(true)}>
+                <IconSymbol name="cart.badge.plus" size={24} color={BrandColors.dark} />
+                <Text style={styles.menuText}>{t('wholesale.title', 'Bulk Order Request')}</Text>
+                <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
+              </TouchableOpacity>
+
               <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('/(tabs)/wishlist')}>
                 <IconSymbol name="heart.fill" size={24} color={BrandColors.dark} />
                 <Text style={styles.menuText}>{t('common.wishlist', 'Wishlist')}</Text>
                 <IconSymbol name="chevron.right" size={16} color="#9CA3AF" />
               </TouchableOpacity>
               
-              {isAuthenticated && (
+              {isAuthenticated && !!token && (
                 <>
                   <TouchableOpacity style={styles.menuItem} onPress={() => handleNavigation('/orders')}>
                     <IconSymbol name="cube.box" size={24} color={BrandColors.dark} />
@@ -175,7 +183,7 @@ export default function AccountDrawer({ visible, onClose }: AccountDrawerProps) 
             <View style={{ flex: 1 }} />
             
             {/* Footer Action */}
-            {isAuthenticated ? (
+            {isAuthenticated && !!token ? (
               <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
                 <IconSymbol name="arrow.right.square" size={20} color={BrandColors.red} />
                 <Text style={styles.logoutText}>{t('common.logout', 'Logout')}</Text>
@@ -189,6 +197,8 @@ export default function AccountDrawer({ visible, onClose }: AccountDrawerProps) 
           </View>
         </Animated.View>
       </View>
+
+      <WholesaleFormModal visible={wholesaleVisible} onClose={() => setWholesaleVisible(false)} />
     </Modal>
   );
 }

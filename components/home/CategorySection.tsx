@@ -5,8 +5,10 @@ import { shopApi, Category } from '@/services/api';
 import { BrandColors } from '@/constants/theme';
 
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 
 export default function CategorySection({ onLoaded }: { onLoaded?: () => void }) {
+  const router = useRouter();
   const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,6 +90,7 @@ export default function CategorySection({ onLoaded }: { onLoaded?: () => void })
             <TouchableOpacity
               style={styles.card}
               activeOpacity={0.85}
+              onPress={() => router.push(`/category?category=${item.slug || item._id || item.id}`)}
             >
               <View style={styles.imageContainer}>
                 {imgSource ? (

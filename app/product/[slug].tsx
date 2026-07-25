@@ -539,7 +539,7 @@ export default function ProductDetailsScreen() {
       </ScrollView>
 
       {/* Bottom Action Bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 7) }]}>
         {isOutOfStock ? (
           <View style={styles.outOfStockBtn}>
             <Text style={styles.outOfStockText}>{labels.outOfStock}</Text>

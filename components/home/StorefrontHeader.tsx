@@ -61,7 +61,7 @@ export default function StorefrontHeader({ scrollY }: { scrollY?: Animated.Value
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, !!scrollY && styles.safeAreaAbsolute]}>
+    <SafeAreaView style={[styles.safeArea, !!scrollY && styles.safeAreaAbsolute]} edges={['top']}>
       <View style={styles.container}>
         {/* Top Brand & Icons Row */}
         <View style={styles.topRow}>

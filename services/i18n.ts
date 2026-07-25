@@ -4,6 +4,27 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   en: {
     translation: {
+    wholesale: {
+      title: 'Bulk Order Request',
+      subtitle: 'Minimum order quantity is 100 plants.',
+      fullName: 'Full Name',
+      mobile: 'Mobile Number',
+      pinCode: 'PIN Code',
+      city: 'City',
+      quantity: 'Approx. Quantity',
+      products: 'Interested Products',
+      requirements: 'Additional Requirements (Optional)',
+      success: 'Success',
+      successMsg: 'Request submitted successfully!',
+      error: 'Error',
+      failedMsg: 'Failed to submit request.',
+      errorMsg: 'An error occurred while submitting.',
+      invalidPin: 'Invalid PIN Code',
+      pinError: 'Error verifying PIN Code',
+      verifying: 'Verifying...',
+      validPin: 'Valid PIN Code',
+      minQtyError: 'Minimum quantity is 100'
+    },
 
     profile: {
       notLoggedIn: 'Not Logged In',
@@ -343,6 +364,27 @@ const resources = {
   },
   hi: {
     translation: {
+    wholesale: {
+      title: 'थोक आदेश अनुरोध',
+      subtitle: 'न्यूनतम आदेश मात्रा 100 पौधे है।',
+      fullName: 'पूरा नाम',
+      mobile: 'मोबाइल नंबर',
+      pinCode: 'पिन कोड',
+      city: 'शहर',
+      quantity: 'अनुमानित मात्रा',
+      products: 'इच्छुक उत्पाद',
+      requirements: 'अतिरिक्त आवश्यकताएं (वैकल्पिक)',
+      success: 'सफल',
+      successMsg: 'अनुरोध सफलतापूर्वक जमा किया गया!',
+      error: 'त्रुटि',
+      failedMsg: 'अनुरोध जमा करने में विफल।',
+      errorMsg: 'जमा करते समय एक त्रुटि हुई।',
+      invalidPin: 'अमान्य पिन कोड',
+      pinError: 'पिन कोड सत्यापित करने में त्रुटि',
+      verifying: 'सत्यापित कर रहा है...',
+      validPin: 'मान्य पिन कोड',
+      minQtyError: 'न्यूनतम मात्रा 100 है'
+    },
 
     profile: {
       notLoggedIn: 'लॉग इन नहीं है',
@@ -682,6 +724,27 @@ const resources = {
   },
   bn: {
     translation: {
+    wholesale: {
+      title: 'বাল্ক অর্ডারের অনুরোধ',
+      subtitle: 'ন্যূনতম অর্ডারের পরিমাণ 100 টি গাছপালা।',
+      fullName: 'সম্পূর্ণ নাম',
+      mobile: 'মোবাইল নম্বর',
+      pinCode: 'পিন কোড',
+      city: 'শহর',
+      quantity: 'আনুমানিক পরিমাণ',
+      products: 'আগ্রহী পণ্য',
+      requirements: 'অতিরিক্ত প্রয়োজনীয়তা (ঐচ্ছিক)',
+      success: 'সফল',
+      successMsg: 'অনুরোধ সফলভাবে জমা দেওয়া হয়েছে!',
+      error: 'ভুল',
+      failedMsg: 'অনুরোধ জমা দিতে ব্যর্থ হয়েছে।',
+      errorMsg: 'জমা দেওয়ার সময় একটি ত্রুটি ঘটেছে।',
+      invalidPin: 'অবৈধ পিন কোড',
+      pinError: 'পিন কোড যাচাই করতে ত্রুটি',
+      verifying: 'যাচাই করা হচ্ছে...',
+      validPin: 'বৈধ পিন কোড',
+      minQtyError: 'ন্যূনতম পরিমাণ 100'
+    },
 
     profile: {
       notLoggedIn: 'লগ ইন করা নেই',
