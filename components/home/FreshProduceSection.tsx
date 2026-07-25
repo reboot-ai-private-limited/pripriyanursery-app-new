@@ -6,7 +6,7 @@ import { BrandColors } from '@/constants/theme';
 
 import { useTranslation } from 'react-i18next';
 
-export default function FreshProduceSection() {
+export default function FreshProduceSection({ onLoaded }: { onLoaded?: () => void }) {
   const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +28,7 @@ export default function FreshProduceSection() {
         setProducts([]);
       } finally {
         setLoading(false);
+        onLoaded?.();
       }
     };
     fetchProducts();
@@ -40,11 +41,7 @@ export default function FreshProduceSection() {
         <Text style={styles.subtitle}>{t('home.freshProduceDesc')}</Text>
       </View>
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={BrandColors.primary} />
-        </View>
-      ) : products.length > 0 ? (
+      {loading ? null : products.length > 0 ? (
         <View style={styles.grid}>
           {products.map((item) => (
             <ProductCard key={item.id} product={item} />

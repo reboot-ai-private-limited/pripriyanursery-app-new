@@ -7,7 +7,6 @@ import { BrandColors } from '@/constants/theme';
 import { shopApi } from '@/services/api';
 import { useTranslation } from 'react-i18next';
 import { formatNumberByLang } from '@/services/localization';
-
 export default function OrderDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
@@ -220,16 +219,6 @@ export default function OrderDetailsScreen() {
                   <Text style={[styles.itemTotalText, isCancelled && { textDecorationLine: 'line-through', color: '#9CA3AF' }]}>
                     {formatPrice(item.itemTotal)}
                   </Text>
-                  {order.orderStatus === 'delivered' && item.itemStatus === 'active' && (
-                    <TouchableOpacity 
-                      style={styles.reviewBtn}
-                      onPress={() => Alert.alert('Review', 'Review functionality coming soon')}
-                    >
-                      <Text style={styles.reviewBtnText}>
-                        {item.hasReviewed ? t('orders.editReview', 'Edit Review') : t('orders.writeReview', 'Write a Review')}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
                 </View>
               </View>
             );
@@ -577,11 +566,18 @@ const styles = StyleSheet.create({
     color: BrandColors.dark,
   },
   reviewBtn: {
-    marginTop: 8,
+    marginTop: 12,
+    backgroundColor: '#3B82F6',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
   },
   reviewBtnText: {
-    fontSize: 12,
-    color: '#3B82F6',
+    fontSize: 13,
+    color: '#FFFFFF',
     fontWeight: '600',
   },
   summaryRow: {

@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { StyleSheet, ScrollView, View, Text, Animated } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { StyleSheet, ScrollView, View, Text, Animated, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import StorefrontHeader from '@/components/home/StorefrontHeader';
 import HeroSection from '@/components/home/HeroSection';
@@ -16,8 +16,20 @@ export default function HomeScreen() {
   const headerHeight = insets.top + 128;
   const scrollY = useRef(new Animated.Value(0)).current;
 
+  // Track global loading states
+  const [heroLoaded, setHeroLoaded] = useState(false);
+  const [catsLoaded, setCatsLoaded] = useState(false);
+  const [freshLoaded, setFreshLoaded] = useState(false);
+
+  const isGlobalLoading = !(heroLoaded && catsLoaded && freshLoaded);
+
   return (
     <View style={styles.container}>
+      {isGlobalLoading && (
+        <View style={[StyleSheet.absoluteFill, styles.globalLoadingOverlay]}>
+          <ActivityIndicator size="large" color={BrandColors.primary} />
+        </View>
+      )}
       {/* Sticky Top Storefront Header */}
       <StorefrontHeader scrollY={scrollY} />
 
@@ -33,13 +45,13 @@ export default function HomeScreen() {
         scrollEventThrottle={16}
       >
         {/* 1. Hero Sliders Carousel */}
-        <HeroSection />
+        <HeroSection onLoaded={() => setHeroLoaded(true)} />
 
         {/* 2. Categories Horizontal Slider */}
-        <CategorySection />
+        <CategorySection onLoaded={() => setCatsLoaded(true)} />
 
         {/* 3. Fresh Produce Product Grid */}
-        <FreshProduceSection />
+        <FreshProduceSection onLoaded={() => setFreshLoaded(true)} />
 
         {/* 4. Dynamic Product Sections (Best Sellers / Categories + Galleries) */}
         <DynamicProductSections />
@@ -84,5 +96,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
     maxWidth: 300,
+  },
+  globalLoadingOverlay: {
+    backgroundColor: '#FFFFFF',
+    zIndex: 999,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

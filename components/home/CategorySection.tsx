@@ -6,7 +6,7 @@ import { BrandColors } from '@/constants/theme';
 
 import { useTranslation } from 'react-i18next';
 
-export default function CategorySection() {
+export default function CategorySection({ onLoaded }: { onLoaded?: () => void }) {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +26,7 @@ export default function CategorySection() {
         setCategories([]);
       } finally {
         setLoading(false);
+        onLoaded?.();
       }
     };
     fetchCategories();
@@ -61,11 +62,7 @@ export default function CategorySection() {
   }, [categories.length]);
 
   if (loading) {
-    return (
-      <View style={[styles.section, styles.centered]}>
-        <ActivityIndicator size="small" color={BrandColors.primary} />
-      </View>
-    );
+    return null;
   }
 
   if (categories.length === 0) {

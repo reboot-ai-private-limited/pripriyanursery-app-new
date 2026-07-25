@@ -11,6 +11,7 @@ import { getLabels, formatNumberByLang, translateAttribute } from '@/services/lo
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
+import ReviewModal from '@/components/product/ReviewModal';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -40,6 +41,12 @@ export default function ProductDetailsScreen() {
   const [showMoreSpecs, setShowMoreSpecs] = useState(false);
   const [isImageViewerVisible, setIsImageViewerVisible] = useState(false);
 
+  // Review states
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [userCanReview, setUserCanReview] = useState(false);
+  const [userHasReviewed, setUserHasReviewed] = useState(false);
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+
   useEffect(() => {
     if (!slug) return;
     const fetchProduct = async () => {
@@ -63,10 +70,18 @@ export default function ProductDetailsScreen() {
     shopApi.get(`/coupons/available?lang=${lang}`).then(res => setOffers(res.data?.data?.coupons || [])).catch(()=>{});
   }, [lang]);
 
-  useEffect(() => {
+  const fetchProductReviews = () => {
     if (product?._id) {
       shopApi.get(`/reviews/product/${product._id}`).then(res => setReviews(res.data?.data || [])).catch(()=>{});
+      shopApi.get(`/reviews/check/${product._id}`).then(res => {
+        if (res.data?.data?.review) setUserHasReviewed(true);
+        setUserCanReview(true);
+      }).catch(() => setUserCanReview(false));
     }
+  };
+
+  useEffect(() => {
+    fetchProductReviews();
   }, [product?._id]);
 
   if (loading) {
@@ -312,6 +327,23 @@ export default function ProductDetailsScreen() {
         <View style={styles.infoContainer}>
           <Text style={styles.productTitle}>{title}</Text>
           
+          {reviews.length > 0 && (
+            <TouchableOpacity 
+              style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 6 }}
+              onPress={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: BrandColors.primary, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, gap: 4 }}>
+                <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '700' }}>
+                  {formatNumberByLang((reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / reviews.length).toFixed(1), lang)}
+                </Text>
+                <IconSymbol name="star.fill" size={10} color="#FFF" />
+              </View>
+              <Text style={{ fontSize: 13, color: '#6B7280', fontWeight: '500' }}>
+                {formatNumberByLang(reviews.length, lang)} {labels.ratingsAndReviews || 'Ratings & Reviews'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
           <View style={styles.priceRow}>
             <Text style={styles.price}>₹{formatNumberByLang(price, lang)}</Text>
             {mrp > price && (
@@ -446,33 +478,57 @@ export default function ProductDetailsScreen() {
 
           {/* Customer Reviews */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{labels.customerReviews || "Customer Reviews"} ({reviews.length})</Text>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>{labels.customerReviews || 'Customer Reviews'} ({formatNumberByLang(reviews.length, lang)})</Text>
+            </View>
             {reviews.length > 0 ? (
-              reviews.map((rev, idx) => (
-                <View key={idx} style={styles.reviewCard}>
-                  <View style={styles.reviewHeader}>
-                    <View style={styles.reviewerInfo}>
-                      <View style={styles.avatarPlaceholder}>
-                        <Text style={styles.avatarText}>{rev.userName?.charAt(0) || 'U'}</Text>
+              <>
+                {(isExpanded ? reviews : reviews.slice(0, 1)).map((rev, idx) => {
+                  const u = rev.userId || rev.user || {};
+                  const authorName = (u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim()) || rev.userName || rev.customerName || t('reviews.anonymous', 'Anonymous');
+                  return (
+                    <View key={idx} style={[styles.reviewCard, idx === (isExpanded ? reviews.length : 1) - 1 && { borderBottomWidth: 0 }]}>
+                      <View style={styles.reviewHeader}>
+                        <View style={styles.reviewerInfo}>
+                          <View style={styles.avatarPlaceholder}>
+                            <Text style={styles.avatarText}>{authorName.charAt(0) || 'U'}</Text>
+                          </View>
+                          <Text style={styles.reviewerName}>{authorName}</Text>
+                        </View>
                       </View>
-                      <Text style={styles.reviewerName}>{rev.userName || 'User'}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
+                        <View style={{ flexDirection: 'row', gap: 2 }}>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <FontAwesome5 
+                              key={star} 
+                              name="star" 
+                              solid
+                              size={12} 
+                              color={star <= Number(rev.rating) ? '#F59E0B' : '#E5E7EB'} 
+                            />
+                          ))}
+                        </View>
+                        {!!rev.title && <Text style={styles.reviewTitle}>{rev.title}</Text>}
+                      </View>
+                      <Text style={styles.reviewComment}>{rev.comment}</Text>
+                      {rev.images && rev.images.length > 0 && (
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.reviewImagesScroll}>
+                          {rev.images.map((img: any, iIdx: number) => (
+                            <Image key={iIdx} source={{ uri: img.url || img }} style={styles.reviewImage} contentFit="cover" />
+                          ))}
+                        </ScrollView>
+                      )}
                     </View>
-                    <View style={styles.ratingBadge}>
-                      <Text style={styles.ratingText}>{rev.rating}</Text>
-                      <IconSymbol name="star.fill" size={10} color="#FFFFFF" />
-                    </View>
-                  </View>
-                  <Text style={styles.reviewTitle}>{rev.title}</Text>
-                  <Text style={styles.reviewComment}>{rev.comment}</Text>
-                  {rev.images && rev.images.length > 0 && (
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.reviewImagesScroll}>
-                      {rev.images.map((img: any, iIdx: number) => (
-                        <Image key={iIdx} source={{ uri: img.url || img }} style={styles.reviewImage} contentFit="cover" />
-                      ))}
-                    </ScrollView>
-                  )}
-                </View>
-              ))
+                  );
+                })}
+                {reviews.length > 1 && (
+                  <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)} style={styles.loadMoreBtn}>
+                    <Text style={styles.loadMoreBtnText}>
+                      {isExpanded ? (labels.showLessReviews || "Show Less Reviews") : (labels.loadMoreReviews || `Load More Reviews (${reviews.length - 1})`)}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
             ) : (
               <View style={styles.noReviewsBox}>
                 <Text style={styles.noReviewsText}>{labels.noReviewsYet || "No reviews yet"}</Text>
@@ -529,6 +585,15 @@ export default function ProductDetailsScreen() {
           </ScrollView>
         </View>
       </Modal>
+
+      {product?._id && (
+        <ReviewModal 
+          visible={reviewModalVisible} 
+          productId={product._id} 
+          onClose={() => setReviewModalVisible(false)} 
+          onSuccess={() => { setReviewModalVisible(false); fetchProductReviews(); }} 
+        />
+      )}
     </View>
   );
 }
@@ -969,18 +1034,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   reviewCard: {
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    marginBottom: 12,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
     backgroundColor: '#FFFFFF',
   },
   reviewHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   reviewerInfo: {
     flexDirection: 'row',
@@ -1062,5 +1125,32 @@ const styles = StyleSheet.create({
     right: 20,
     zIndex: 10,
     padding: 8,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  writeReviewHeaderBtn: {
+    backgroundColor: BrandColors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  writeReviewText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  loadMoreBtn: {
+    marginTop: 8,
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  loadMoreBtnText: {
+    color: BrandColors.primary,
+    fontWeight: '600',
+    fontSize: 14,
   }
 });

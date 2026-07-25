@@ -8,6 +8,7 @@ import { shopApi } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { formatNumberByLang } from '@/services/localization';
+import ReviewModal from '@/components/product/ReviewModal';
 
 export default function OrdersScreen() {
   const router = useRouter();
@@ -20,6 +21,10 @@ export default function OrdersScreen() {
   const [cancelReason, setCancelReason] = useState("");
   const [cancelError, setCancelError] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
+
+  // Review states
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+  const [selectedReviewProductId, setSelectedReviewProductId] = useState<string>('');
 
   useEffect(() => {
     if (isAuthenticated === false) {
@@ -161,6 +166,20 @@ export default function OrdersScreen() {
                 <Text style={styles.cancelItemBtnText}>{t('orders.cancelItem', 'Cancel Item')}</Text>
               </TouchableOpacity>
             )}
+
+            {order.orderStatus === 'delivered' && item.itemStatus === 'active' && (
+              <TouchableOpacity 
+                style={styles.reviewBtn}
+                onPress={() => {
+                  setSelectedReviewProductId(item.productId || item.variant?.productId || '');
+                  setReviewModalVisible(true);
+                }}
+              >
+                <Text style={styles.reviewBtnText}>
+                  {item.hasReviewed ? t('orders.editReview', 'Edit Review') : t('orders.writeReview', 'Write a Review')}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
@@ -265,6 +284,16 @@ export default function OrdersScreen() {
           </View>
         </View>
       </Modal>
+
+      <ReviewModal
+        visible={reviewModalVisible}
+        productId={selectedReviewProductId}
+        onClose={() => setReviewModalVisible(false)}
+        onSuccess={() => {
+          setReviewModalVisible(false);
+          fetchOrders();
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -537,4 +566,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#FFF',
   },
+  reviewBtn: {
+    marginTop: 12,
+    backgroundColor: '#3B82F6',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+  },
+  reviewBtnText: {
+    fontSize: 13,
+    color: '#FFFFFF',
+    fontWeight: '600',
+  }
 });

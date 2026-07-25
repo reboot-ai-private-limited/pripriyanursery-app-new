@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-export default function HeroSection() {
+export default function HeroSection({ onLoaded }: { onLoaded?: () => void }) {
   const { t } = useTranslation();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +31,7 @@ export default function HeroSection() {
         setBanners([]);
       } finally {
         setLoading(false);
+        onLoaded?.();
       }
     };
     fetchBanners();
@@ -84,11 +85,7 @@ export default function HeroSection() {
   };
 
   if (loading) {
-    return (
-      <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color={BrandColors.primary} />
-      </View>
-    );
+    return null;
   }
 
   if (banners.length === 0) {

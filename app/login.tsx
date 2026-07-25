@@ -81,7 +81,7 @@ export default function LoginScreen() {
                 placeholderTextColor="#9CA3AF"
                 keyboardType="phone-pad"
                 value={phone}
-                onChangeText={setPhone}
+                onChangeText={(val) => setPhone(val.replace(/\D/g, ''))}
                 maxLength={10}
               />
               <TouchableOpacity style={styles.button} onPress={handleSendOtp} disabled={loading}>
@@ -94,18 +94,26 @@ export default function LoginScreen() {
                 style={styles.input}
                 placeholder="Enter 6-digit OTP"
                 placeholderTextColor="#9CA3AF"
-                keyboardType="number-pad"
+                keyboardType="numeric"
+                textContentType="oneTimeCode"
+                autoComplete="sms-otp"
                 value={otp}
-                onChangeText={setOtp}
+                onChangeText={(val) => setOtp(val.replace(/\D/g, ''))}
                 maxLength={6}
               />
               <TouchableOpacity style={styles.button} onPress={handleVerifyOtp} disabled={loading}>
                 {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Verify & Login</Text>}
               </TouchableOpacity>
               
-              <TouchableOpacity onPress={() => setStep(1)} style={styles.backBtn} disabled={loading}>
-                <Text style={styles.backBtnText}>Change Phone Number</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 12, gap: 12 }}>
+                <TouchableOpacity onPress={handleSendOtp} disabled={loading}>
+                  <Text style={styles.backBtnText}>Resend OTP</Text>
+                </TouchableOpacity>
+                <Text style={{ color: '#D1D5DB' }}>|</Text>
+                <TouchableOpacity onPress={() => setStep(1)} disabled={loading}>
+                  <Text style={styles.backBtnText}>Change Number</Text>
+                </TouchableOpacity>
+              </View>
             </>
           )}
         </View>

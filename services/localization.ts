@@ -50,7 +50,9 @@ export const LABELS: Record<string, Record<string, string>> = {
     loadMoreReviews: 'Load More Reviews',
     certifiedBuyer: 'Certified Buyer',
     report: 'Report',
-    proceedToCheckout: 'Proceed to Checkout'
+    proceedToCheckout: 'Proceed to Checkout',
+    showMore: 'Show More',
+    showLess: 'Show Less'
   },
   bn: {
     off: '% ছাড়',
@@ -89,7 +91,9 @@ export const LABELS: Record<string, Record<string, string>> = {
     loadMoreReviews: 'আরও রিভিউ লোড করুন',
     certifiedBuyer: 'প্রমাণিত ক্রেতা',
     report: 'রিপোর্ট',
-    proceedToCheckout: 'চেকআউট করুন'
+    proceedToCheckout: 'চেকআউট করুন',
+    showMore: 'আরও দেখুন',
+    showLess: 'কম দেখুন'
   },
   hi: {
     off: '% छूट',
@@ -128,7 +132,9 @@ export const LABELS: Record<string, Record<string, string>> = {
     loadMoreReviews: 'और समीक्षाएं लोड करें',
     certifiedBuyer: 'प्रमाणित खरीदार',
     report: 'रिपोर्ट',
-    proceedToCheckout: 'चेकआउट के लिए आगे बढ़ें'
+    proceedToCheckout: 'चेकआउट के लिए आगे बढ़ें',
+    showMore: 'और दिखाएं',
+    showLess: 'कम दिखाएं'
   }
 };
 
