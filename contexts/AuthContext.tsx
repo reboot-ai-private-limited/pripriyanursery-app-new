@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             headers: { Authorization: `Bearer ${storedToken}` }
           });
           const fetchedUser = response.data?.data || response.data;
-          if (fetchedUser && fetchedUser.id) {
+          if (fetchedUser && (fetchedUser.id || fetchedUser._id)) {
              setUser(fetchedUser);
              await AsyncStorage.setItem('user', JSON.stringify(fetchedUser));
           }

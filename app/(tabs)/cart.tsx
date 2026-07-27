@@ -73,9 +73,9 @@ export default function CartScreen() {
 
       {cart.length === 0 ? (
         <View style={[styles.center, { paddingTop: headerHeight }]}>
-          <Breadcrumbs
-            items={[{ label: t("cart.title", { defaultValue: "Cart" }) }]}
-          />
+          <View style={{ width: '100%', position: 'absolute', top: headerHeight }}>
+            <Breadcrumbs items={[{ label: t("cart.title", { defaultValue: "Cart" }) }]} />
+          </View>
           <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
             <IconSymbol name="cart.fill" size={64} color="#E5E7EB" />
             <Text style={styles.emptyTitle}>
@@ -105,9 +105,11 @@ export default function CartScreen() {
             )}
             scrollEventThrottle={16}
           >
-            <Breadcrumbs
-              items={[{ label: t("cart.title", { defaultValue: "Cart" }) }]}
-            />
+            <View style={{ marginHorizontal: -16, marginBottom: 16 }}>
+              <Breadcrumbs
+                items={[{ label: t("cart.title", { defaultValue: "Cart" }) }]}
+              />
+            </View>
             <Text style={styles.sectionTitle}>
               {t("cart.items", { defaultValue: "Cart Items" })} ({formatNumberByLang(cart.length, lang)})
             </Text>

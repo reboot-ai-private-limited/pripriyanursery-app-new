@@ -103,18 +103,18 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
               
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('wholesale.fullName', 'Full Name')} *</Text>
-                <TextInput style={styles.input} value={formData.fullName} onChangeText={t => setFormData(p => ({...p, fullName: t}))} placeholder="John Doe" />
+                <TextInput style={styles.input} value={formData.fullName} onChangeText={t => setFormData(p => ({...p, fullName: t}))} placeholder="John Doe" placeholderTextColor="#9CA3AF" />
               </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('wholesale.mobile', 'Mobile Number')} *</Text>
-                <TextInput style={styles.input} value={formData.mobile} onChangeText={t => setFormData(p => ({...p, mobile: t}))} placeholder="9876543210" keyboardType="phone-pad" maxLength={10} />
+                <TextInput style={styles.input} value={formData.mobile} onChangeText={t => setFormData(p => ({...p, mobile: t}))} placeholder="9876543210" placeholderTextColor="#9CA3AF" keyboardType="phone-pad" maxLength={10} />
               </View>
 
               <View style={styles.row}>
                 <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={styles.label}>{t('wholesale.pinCode', 'PIN Code')} *</Text>
-                  <TextInput style={[styles.input, pinCodeState === 'invalid' && styles.inputError]} value={formData.pinCode} onChangeText={handlePinCodeChange} placeholder="700001" keyboardType="number-pad" maxLength={6} />
+                  <TextInput style={[styles.input, pinCodeState === 'invalid' && styles.inputError]} value={formData.pinCode} onChangeText={handlePinCodeChange} placeholder="700001" placeholderTextColor="#9CA3AF" keyboardType="number-pad" maxLength={6} />
                   {pinCodeState === 'loading' && <Text style={styles.hintText}>{t('wholesale.verifying', 'Verifying...')}</Text>}
                   {pinCodeState === 'valid' && <Text style={styles.successText}>{t('wholesale.validPin', 'Valid PIN Code')}</Text>}
                   {pinCodeState === 'invalid' && <Text style={styles.errorText}>{pinCodeError}</Text>}
@@ -122,13 +122,13 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
 
                 <View style={[styles.inputGroup, { flex: 1 }]}>
                   <Text style={styles.label}>{t('wholesale.city', 'City')} *</Text>
-                  <TextInput style={styles.input} value={formData.city} onChangeText={t => setFormData(p => ({...p, city: t}))} placeholder="Kolkata" />
+                  <TextInput style={styles.input} value={formData.city} onChangeText={t => setFormData(p => ({...p, city: t}))} placeholder="Kolkata" placeholderTextColor="#9CA3AF" />
                 </View>
               </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('wholesale.quantity', 'Approx. Quantity')} *</Text>
-                <TextInput style={styles.input} value={formData.quantity} onChangeText={t => setFormData(p => ({...p, quantity: t}))} placeholder="e.g. 100" keyboardType="number-pad" />
+                <TextInput style={styles.input} value={formData.quantity} onChangeText={t => setFormData(p => ({...p, quantity: t}))} placeholder="e.g. 100" placeholderTextColor="#9CA3AF" keyboardType="number-pad" />
                 {!!formData.quantity && Number(formData.quantity) < 100 && (
                   <Text style={styles.errorText}>{t('wholesale.minQtyError', 'Minimum quantity is 100')}</Text>
                 )}
@@ -136,12 +136,12 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('wholesale.products', 'Interested Products')} *</Text>
-                <TextInput style={styles.input} value={formData.products} onChangeText={t => setFormData(p => ({...p, products: t}))} placeholder="e.g. Mango, Guava plants" />
+                <TextInput style={styles.input} value={formData.products} onChangeText={t => setFormData(p => ({...p, products: t}))} placeholder="e.g. Mango, Guava plants" placeholderTextColor="#9CA3AF" />
               </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('wholesale.requirements', 'Additional Requirements (Optional)')}</Text>
-                <TextInput style={[styles.input, styles.textArea]} value={formData.requirements} onChangeText={t => setFormData(p => ({...p, requirements: t}))} placeholder="Any specific requirements..." multiline numberOfLines={3} textAlignVertical="top" />
+                <TextInput style={[styles.input, styles.textArea]} value={formData.requirements} onChangeText={t => setFormData(p => ({...p, requirements: t}))} placeholder="Any specific requirements..." placeholderTextColor="#9CA3AF" multiline numberOfLines={3} textAlignVertical="top" />
               </View>
             </ScrollView>
 

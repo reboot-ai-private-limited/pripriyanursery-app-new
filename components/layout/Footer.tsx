@@ -91,7 +91,7 @@ export default function Footer() {
             <TouchableOpacity 
               key={cat._id || idx.toString()} 
               style={styles.linkItem}
-              onPress={() => router.push(`/products?category=${cat._id}` as any)}
+              onPress={() => router.push(`/category?category=${cat._id}` as any)}
             >
               <Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {cat.name}</Text>
             </TouchableOpacity>
@@ -102,10 +102,10 @@ export default function Footer() {
       {/* ================= Section 3: Quick Links ================= */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('footer.quickLinks')}</Text>
-        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.terms')}</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.privacy')}</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.refund')}</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.linkItem}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.shipping')}</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.linkItem} onPress={() => router.push('/policies/terms' as any)}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.terms')}</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.linkItem} onPress={() => router.push('/policies/privacy' as any)}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.privacy')}</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.linkItem} onPress={() => router.push('/policies/refund' as any)}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.refund')}</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.linkItem} onPress={() => router.push('/policies/shipping' as any)}><Text style={styles.linkText}><Text style={styles.chevron}>&gt;</Text>  {t('footer.quickLinksList.shipping')}</Text></TouchableOpacity>
       </View>
 
       {/* ================= Section 4: Contact Info ================= */}

@@ -20,7 +20,10 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "notification": {
+        "icon": "./assets/images/appIcon.png"
+      }
     },
     "web": {
       "output": "static",
@@ -31,9 +34,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/appIcon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
+          "image": "./assets/images/SPALASHSCREEN.png",
+          "resizeMode": "cover",
           "backgroundColor": "#34A853",
           "dark": {
             "backgroundColor": "#34A853"

@@ -272,10 +272,14 @@ export default function CheckoutScreen() {
 
     setPlacingOrder(true);
     try {
-      const orderItems = cart.map((item) => ({
-        variantId: item.product.variantId || item.product._id || item.product.id,
-        quantity: item.quantity,
-      }));
+      const orderItems = cart.map((item) => {
+        const variant = item.product.variants?.[item.variantIndex || 0];
+        const variantId = variant?._id || variant?.id || item.product.variantId || item.product.defaultVariantId || item.product._id || item.product.id;
+        return {
+          variantId,
+          quantity: item.quantity,
+        };
+      });
 
       const shippingAddress = {
         fullName: selectedAddress.fullName,
@@ -564,6 +568,7 @@ export default function CheckoutScreen() {
               <TextInput
                 style={styles.couponInput}
                 placeholder={t('cart.couponPlaceholder', 'Enter coupon code')}
+                placeholderTextColor="#9CA3AF"
                 value={couponCode}
                 onChangeText={(text) => {
                   setCouponCode(text);

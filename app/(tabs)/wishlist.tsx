@@ -34,7 +34,7 @@ export default function WishlistScreen() {
             { useNativeDriver: false }
           )}
           scrollEventThrottle={16}
-          ListHeaderComponent={<Breadcrumbs items={[{ label: t('wishlist.title', {defaultValue: 'My Wishlist'}) }]} />}
+          ListHeaderComponent={<View style={{ marginHorizontal: -16, marginBottom: 16 }}><Breadcrumbs items={[{ label: t('wishlist.title', {defaultValue: 'My Wishlist'}) }]} /></View>}
           ListEmptyComponent={() => (
             <View style={styles.center}>
               <IconSymbol name="heart.fill" size={64} color="#E5E7EB" />
