@@ -3,12 +3,18 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import '../services/i18n';
+import messaging from '@react-native-firebase/messaging';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 import { WishlistProvider } from '@/contexts/WishlistContext';
 import { CartProvider } from '@/contexts/CartContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+
+// Register background handler early!
+messaging().setBackgroundMessageHandler(async remoteMessage => {
+  console.log('Message handled in the background!', remoteMessage);
+});
 
 export const unstable_settings = {
   anchor: '(tabs)',

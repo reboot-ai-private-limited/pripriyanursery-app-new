@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import messaging from '@react-native-firebase/messaging';
-import { Platform, Alert } from 'react-native';
+import notifee, { AndroidImportance } from '@notifee/react-native';
+import { Platform } from 'react-native';
 import { shopApi } from '@/services/api';
 
 export const usePushNotifications = (isAuthenticated: boolean) => {
@@ -22,14 +23,15 @@ export const usePushNotifications = (isAuthenticated: boolean) => {
             return;
           }
         } else if (Platform.OS === 'android') {
-          // On Android 13+, you might need PermissionsAndroid or Expo's permission handler
-          // messaging().requestPermission() also handles Android 13+ seamlessly in newer RNFB versions
           const authStatus = await messaging().requestPermission();
           if (authStatus !== messaging.AuthorizationStatus.AUTHORIZED) {
              console.log('Android Push notification permission denied.');
              return;
           }
         }
+
+        // Request Notifee permissions for local notifications (iOS)
+        await notifee.requestPermission();
 
         // Get the device token
         const fcmToken = await messaging().getToken();
@@ -63,8 +65,29 @@ export const usePushNotifications = (isAuthenticated: boolean) => {
       await sendTokenToBackend(fcmToken);
     });
 
+    // Listen for foreground messages and show a banner
+    const unsubscribeOnMessage = messaging().onMessage(async remoteMessage => {
+      // Create a notification channel for Android
+      const channelId = await notifee.createChannel({
+        id: 'default',
+        name: 'Default Channel',
+        importance: AndroidImportance.HIGH,
+      });
+
+      // Display the local notification banner
+      await notifee.displayNotification({
+        title: remoteMessage.notification?.title || 'New Notification',
+        body: remoteMessage.notification?.body || 'You have a new message.',
+        android: {
+          channelId,
+          // You can also add smallIcon: 'ic_launcher' if you want a custom icon
+        },
+      });
+    });
+
     return () => {
       unsubscribeTokenRefresh();
+      unsubscribeOnMessage();
     };
   }, [isAuthenticated]);
 
