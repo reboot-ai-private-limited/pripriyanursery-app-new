@@ -360,7 +360,8 @@ export default function CheckoutScreen() {
         if (!buyNowItem) clearCart();
         setSuccessData({ visible: true, orderId: customOrderId });
       } catch (err: any) {
-        Alert.alert('Payment Failed', err.description || err.message || 'Payment was cancelled or failed');
+        console.log('Razorpay Error:', err);
+        Alert.alert('Payment Failed', 'Payment failed, please try again later.');
       }
 
     } catch (error: any) {
