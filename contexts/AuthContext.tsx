@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { DeviceEventEmitter } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { shopApi } from '@/services/api';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export interface User {
   id: string;
@@ -26,6 +27,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  // Initialize push notifications
+  usePushNotifications(isAuthenticated);
 
   useEffect(() => {
     loadAuthData();

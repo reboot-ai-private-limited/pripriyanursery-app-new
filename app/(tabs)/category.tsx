@@ -93,7 +93,9 @@ export default function CategoryScreen() {
         activeOpacity={0.8}
       >
         <View style={[styles.catImageContainer, isSelected && styles.catImageContainerSelected]}>
-          {(item as any).coverImage?.url || item.imageUrl || item.image ? (
+          {item._id === 'all' ? (
+            <Image source={require('@/assets/images/allproduct.jpeg')} style={styles.catImage} contentFit="cover" />
+          ) : (item as any).coverImage?.url || item.imageUrl || item.image ? (
             <Image source={{ uri: ((item as any).coverImage?.url || item.imageUrl || item.image || '') as string }} style={styles.catImage} contentFit="cover" />
           ) : (
             <View style={styles.placeholder}>

@@ -19,7 +19,8 @@
         "foregroundImage": "./assets/images/appIcon.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
@@ -39,7 +40,16 @@
           }
         }
       ],
-      "./plugins/withRazorpayQueries.js"
+      "./plugins/withRazorpayQueries.js",
+      "@react-native-firebase/app",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
