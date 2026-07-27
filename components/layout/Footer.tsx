@@ -18,7 +18,7 @@ export default function Footer() {
       try {
         const res = await shopApi.get(`/categories`);
         if (res.data?.data) {
-          setCategories(res.data.data.slice(0, 5)); // Just take first 5 for the footer to match "Category 1"
+          setCategories(res.data.data); // Show all categories in the footer
         }
       } catch (err) {
         console.error('Failed to fetch categories:', err);
@@ -44,26 +44,6 @@ export default function Footer() {
         <Text style={styles.description}>
           <Text style={styles.boldText}>Pri Priya Nursery</Text> {t('footer.description', {defaultValue: 'offers a wide selection of indoor and outdoor plants, gardening tools, and expert advice.'})}
         </Text>
-
-        {/* Follow Us */}
-        <Text style={styles.sectionTitle}>{t('footer.followUs')}</Text>
-        <View style={styles.socialRow}>
-          <TouchableOpacity onPress={() => handleLink('https://facebook.com')}>
-            <FontAwesome5 name="facebook" size={24} color="rgba(255,255,255,0.6)" style={styles.socialIcon} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleLink('https://instagram.com')}>
-            <FontAwesome5 name="instagram" size={24} color="rgba(255,255,255,0.6)" style={styles.socialIcon} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleLink('https://google.com')}>
-            <FontAwesome5 name="google" size={24} color="rgba(255,255,255,0.6)" style={styles.socialIcon} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleLink('https://twitter.com')}>
-            <FontAwesome5 name="twitter" size={24} color="rgba(255,255,255,0.6)" style={styles.socialIcon} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleLink('https://youtube.com')}>
-            <FontAwesome5 name="youtube" size={24} color="rgba(255,255,255,0.6)" style={styles.socialIcon} />
-          </TouchableOpacity>
-        </View>
 
         {/* We Accepted */}
         <Text style={styles.sectionTitle}>{t('footer.weAccepted')}</Text>
@@ -122,21 +102,24 @@ export default function Footer() {
           <Text style={styles.contactText}>pripriyanursery@gmail.com</Text>
         </View>
         
-        <View style={styles.contactItem}>
+        <TouchableOpacity style={styles.contactItem} onPress={() => handleLink('tel:+917586891753')}>
           <FontAwesome5 name="phone-alt" size={16} color="rgba(255,255,255,0.6)" />
           <Text style={styles.contactText}>+91 75868 91753</Text>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.contactItem}>
+        <TouchableOpacity style={styles.contactItem} onPress={() => handleLink('whatsapp://send?phone=+917586891753')}>
           <FontAwesome5 name="whatsapp" size={18} color="rgba(255,255,255,0.6)" />
           <Text style={styles.contactText}>+91 75868 91753</Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
       {/* ================= Copyright ================= */}
       <View style={styles.copyrightBorder}>
         <Text style={styles.copyrightText}>
           {t('footer.copyright', {defaultValue: `© ${currentYear} Pri Priya Nursery. All Rights Reserved.`})}
+        </Text>
+        <Text style={[styles.copyrightText, { marginTop: 4 }]}>
+          Developed by Reboot AI
         </Text>
       </View>
     </View>

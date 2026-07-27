@@ -38,7 +38,6 @@ export default function FreshProduceSection({ onLoaded }: { onLoaded?: () => voi
     <View style={styles.section}>
       <View style={styles.header}>
         <Text style={styles.title}>{t('home.freshProduceTitle')}</Text>
-        <Text style={styles.subtitle}>{t('home.freshProduceDesc')}</Text>
       </View>
 
       {loading ? null : products.length > 0 ? (

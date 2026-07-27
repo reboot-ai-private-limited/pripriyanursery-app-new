@@ -297,7 +297,7 @@ const resources = {
         cancel: 'Cancel',
       },
       home: {
-        freshProduceTitle: 'Our Fresh Produce',
+        freshProduceTitle: 'Our Fresh Products',
         freshProduceDesc: 'Hand-picked and delivered straight from our nursery to your doorstep.',
         noProducts: 'No products found. Add products from the Admin Panel to see them here!',
         plants: 'Plants',
@@ -657,7 +657,7 @@ const resources = {
         cancel: 'रद्द करें',
       },
       home: {
-        freshProduceTitle: 'हमारे ताज़ा उत्पाद',
+        freshProduceTitle: 'हमारे ताज़े उत्पाद',
         freshProduceDesc: 'हाथ से चुने गए और सीधे हमारी नर्सरी से आपके दरवाजे तक पहुँचाए गए।',
         noProducts: 'कोई उत्पाद नहीं मिला। यहां देखने के लिए एडमिन पैनल से उत्पाद जोड़ें!',
         plants: 'पौधे',
