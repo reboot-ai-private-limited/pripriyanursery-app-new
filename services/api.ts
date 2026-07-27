@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Platform } from 'react-native';
+import { Platform, DeviceEventEmitter } from 'react-native';
 
 const getBaseUrl = () => {
   if (process.env.EXPO_PUBLIC_API_URL) {
@@ -34,6 +34,17 @@ shopApi.interceptors.request.use(async (config) => {
   config.params = { ...config.params, lang };
   return config;
 });
+
+shopApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // If we receive a 401 Unauthorized from any API call, broadcast an event
+    if (error.response && error.response.status === 401) {
+      DeviceEventEmitter.emit('onUnauthorized');
+    }
+    return Promise.reject(error);
+  }
+);
 
 export interface Banner {
   _id?: string;

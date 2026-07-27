@@ -15,6 +15,8 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
+  buyNowItem: CartItem | null;
+  setBuyNowItem: (item: CartItem | null) => void;
   addToCart: (product: Product, quantity: number, variantIndex?: number) => void;
   removeFromCart: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
@@ -28,6 +30,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const { i18n } = useTranslation();
   const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -206,7 +209,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, getCartItemQty }}>
+    <CartContext.Provider value={{ cart, buyNowItem, setBuyNowItem, addToCart, removeFromCart, updateQuantity, clearCart, getCartItemQty }}>
       {children}
     </CartContext.Provider>
   );

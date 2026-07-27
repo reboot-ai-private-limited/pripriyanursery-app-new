@@ -303,29 +303,29 @@ export default function AddressesScreen() {
             <ScrollView style={styles.formContainer} contentContainerStyle={{ paddingBottom: 40 }}>
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('address.name', 'Full Name')} *</Text>
-                <TextInput style={styles.input} value={formData.fullName} onChangeText={t => setFormData({...formData, fullName: t})} placeholder={t('address.name', 'Full Name')} />
+                <TextInput placeholderTextColor="#9CA3AF" style={styles.input} value={formData.fullName} onChangeText={t => setFormData({...formData, fullName: t})} placeholder={t('address.name', 'Full Name')} />
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('account.mobileNumber', 'Phone Number')} *</Text>
-                <TextInput style={styles.input} value={formData.phone} onChangeText={t => setFormData({...formData, phone: t})} placeholder={t('address.tenDigits', '10 digits')} keyboardType="phone-pad" />
+                <TextInput placeholderTextColor="#9CA3AF" style={styles.input} value={formData.phone} onChangeText={t => setFormData({...formData, phone: t})} placeholder={t('address.tenDigits', '10 digits')} keyboardType="phone-pad" />
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('address.areaStreet', 'Address Line 1')} *</Text>
-                <TextInput style={styles.input} value={formData.addressLine1} onChangeText={t => setFormData({...formData, addressLine1: t})} placeholder={t('address.areaStreet', 'Address Line 1')} />
+                <TextInput placeholderTextColor="#9CA3AF" style={styles.input} value={formData.addressLine1} onChangeText={t => setFormData({...formData, addressLine1: t})} placeholder={t('address.areaStreet', 'Address Line 1')} />
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('address.areaStreet', 'Address Line 2')} 2</Text>
-                <TextInput style={styles.input} value={formData.addressLine2} onChangeText={t => setFormData({...formData, addressLine2: t})} placeholder={t('address.localityOptional', 'Locality (Optional)')} />
+                <TextInput placeholderTextColor="#9CA3AF" style={styles.input} value={formData.addressLine2} onChangeText={t => setFormData({...formData, addressLine2: t})} placeholder={t('address.localityOptional', 'Locality (Optional)')} />
               </View>
               
               <View style={styles.row}>
                 <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={styles.label}>{t('address.city', 'City')} *</Text>
-                  <TextInput style={styles.input} value={formData.city} onChangeText={t => setFormData({...formData, city: t})} placeholder={t('address.city', 'City')} />
+                  <TextInput placeholderTextColor="#9CA3AF" style={styles.input} value={formData.city} onChangeText={t => setFormData({...formData, city: t})} placeholder={t('address.city', 'City')} />
                 </View>
                 <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
                   <Text style={styles.label}>{t('address.pinCode', 'Postal Code')} *</Text>
-                  <TextInput style={styles.input} value={formData.postalCode} onChangeText={t => setFormData({...formData, postalCode: t.replace(/\D/g, '').slice(0,6)})} placeholder={t('address.pinCode', 'PIN Code')} keyboardType="numeric" />
+                  <TextInput placeholderTextColor="#9CA3AF" style={styles.input} value={formData.postalCode} onChangeText={t => setFormData({...formData, postalCode: t.replace(/\D/g, '').slice(0,6)})} placeholder={t('address.pinCode', 'PIN Code')} keyboardType="numeric" />
                   {serviceabilityLoading && (
                     <Text style={{ fontSize: 11, color: BrandColors.primary, marginTop: 4 }}>Checking...</Text>
                   )}
@@ -340,7 +340,7 @@ export default function AddressesScreen() {
               
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('address.state', 'State')} *</Text>
-                <TextInput style={styles.input} value={formData.state} onChangeText={t => setFormData({...formData, state: t})} placeholder={t('address.state', 'State')} />
+                <TextInput placeholderTextColor="#9CA3AF" style={styles.input} value={formData.state} onChangeText={t => setFormData({...formData, state: t})} placeholder={t('address.state', 'State')} />
               </View>
 
               {(() => {
@@ -404,3 +404,4 @@ const styles = StyleSheet.create({
   saveBtn: { backgroundColor: BrandColors.primary, padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 16 },
   saveBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' }
 });
+

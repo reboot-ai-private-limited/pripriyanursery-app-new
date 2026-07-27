@@ -11,6 +11,7 @@ import { getLabels, formatNumberByLang, translateAttribute } from '@/services/lo
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import ReviewModal from '@/components/product/ReviewModal';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -28,7 +29,8 @@ export default function ProductDetailsScreen() {
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [isVariantLoading, setIsVariantLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-  const { addToCart, updateQuantity, removeFromCart, getCartItemQty, cart } = useCart();
+  const { addToCart, updateQuantity, removeFromCart, getCartItemQty, cart, setBuyNowItem } = useCart();
+  const { isAuthenticated } = useAuth();
 
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -193,8 +195,8 @@ export default function ProductDetailsScreen() {
   };
 
   const productId = product?._id || product?.id;
-  const cartItemId = selectedVariantIndex !== undefined ? `${productId}-${selectedVariantIndex}` : productId;
-  const currentCartQty = getCartItemQty(productId, selectedVariantIndex);
+  const cartItemId = selectedVariant ? (selectedVariant._id || selectedVariant.id || productId) : productId;
+  const currentCartQty = getCartItemQty(cartItemId);
 
   const handleAddToCart = () => {
     if (product) {
@@ -202,6 +204,23 @@ export default function ProductDetailsScreen() {
     }
   };
   
+  const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    if (product) {
+      const newItem = {
+        id: cartItemId,
+        product,
+        variantIndex: selectedVariantIndex,
+        quantity: 1,
+      };
+      setBuyNowItem(newItem);
+      router.push('/checkout');
+    }
+  };
+
   const incrementQty = () => {
     updateQuantity(cartItemId, currentCartQty + 1);
   };
@@ -558,7 +577,7 @@ export default function ProductDetailsScreen() {
                 <Text style={styles.addBtnText}>{labels.addToCart}</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity style={styles.buyBtn}>
+            <TouchableOpacity style={styles.buyBtn} onPress={handleBuyNow}>
               <Text style={styles.buyBtnText}>{labels.buyNow}</Text>
             </TouchableOpacity>
           </View>

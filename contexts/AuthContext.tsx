@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { DeviceEventEmitter } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { shopApi } from '@/services/api';
 
@@ -28,6 +29,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     loadAuthData();
+
+    // Listen for global 401 unauthorized events emitted from api.ts interceptor
+    const subscription = DeviceEventEmitter.addListener('onUnauthorized', () => {
+      logout();
+    });
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   const loadAuthData = async () => {
@@ -36,9 +46,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedUser = await AsyncStorage.getItem('user');
       
       if (storedToken && storedUser) {
+        // Optimistic UI update
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
         setIsAuthenticated(true);
+
+        // Verify token with backend
+        try {
+          const response = await shopApi.get('/users/me', {
+            headers: { Authorization: `Bearer ${storedToken}` }
+          });
+          const fetchedUser = response.data?.data || response.data;
+          if (fetchedUser && fetchedUser.id) {
+             setUser(fetchedUser);
+             await AsyncStorage.setItem('user', JSON.stringify(fetchedUser));
+          }
+        } catch (error: any) {
+          // If the backend rejects the token, force a logout
+          if (error.response?.status === 401 || error.response?.status === 403 || error.response?.status === 404) {
+            await logout();
+          }
+        }
       }
     } catch (e) {
       console.error('Failed to load auth data:', e);

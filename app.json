@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "pripriya-app",
+    "name": "Pripriya Nursery",
     "slug": "pripriya-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,9 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pripriya.nursery"
     },
     "android": {
+      "package": "com.pripriya.nursery",
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/appIcon.png"
@@ -31,12 +33,13 @@
           "image": "./assets/images/appIcon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#34A853",
           "dark": {
-            "backgroundColor": "#ffffff"
+            "backgroundColor": "#34A853"
           }
         }
-      ]
+      ],
+      "./plugins/withRazorpayQueries.js"
     ],
     "experiments": {
       "typedRoutes": true,

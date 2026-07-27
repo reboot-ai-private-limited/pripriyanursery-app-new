@@ -54,11 +54,11 @@ export default function CategoryScreen() {
         }
       }
 
-      let url = '/products?limit=100';
+      let url = '/products?limit=100&isActive=true&isPublished=true';
       if (selectedCategory && selectedCategory !== 'all') {
         const cat = currentCategories.find(c => c._id === selectedCategory);
         const slug = cat ? cat.slug : selectedCategory; 
-        url = `/products/category/${slug}?limit=100`;
+        url = `/products/category/${slug}?limit=100&isActive=true&isPublished=true`;
       }
       
       if (search) {

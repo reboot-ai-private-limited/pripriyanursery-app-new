@@ -17,7 +17,8 @@ export default function CheckoutScreen() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language || 'en';
   const { isAuthenticated, token } = useAuth();
-  const { cart, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { cart: globalCart, buyNowItem, setBuyNowItem, updateQuantity, removeFromCart, clearCart } = useCart();
+  const cart = buyNowItem ? [buyNowItem] : globalCart;
 
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -106,6 +107,11 @@ export default function CheckoutScreen() {
       fetchAddresses();
       fetchCoupons();
     }
+    
+    return () => {
+      // Clear buy now item when leaving checkout screen
+      setBuyNowItem(null);
+    };
   }, [isAuthenticated]);
 
   const fetchAddresses = async () => {
@@ -287,7 +293,7 @@ export default function CheckoutScreen() {
         items: orderItems,
         shippingAddress,
         appliedCoupon: appliedCoupon?.code,
-        isCartCheckout: true,
+        isCartCheckout: !buyNowItem,
       });
       const orderData = orderRes.data?.data;
       const orderId = orderData?.orderId;
@@ -326,7 +332,7 @@ export default function CheckoutScreen() {
                 { 
                   text: 'Simulate Success', 
                   onPress: () => {
-                    clearCart();
+                    if (!buyNowItem) clearCart();
                     setSuccessData({ visible: true, orderId: customOrderId });
                   } 
                 }
@@ -347,7 +353,7 @@ export default function CheckoutScreen() {
           razorpaySignature: response.razorpay_signature,
         });
 
-        clearCart();
+        if (!buyNowItem) clearCart();
         setSuccessData({ visible: true, orderId: customOrderId });
       } catch (err: any) {
         Alert.alert('Payment Failed', err.description || err.message || 'Payment was cancelled or failed');
@@ -385,19 +391,20 @@ export default function CheckoutScreen() {
 
           {showAddressForm ? (
             <View style={styles.addressForm}>
-              <TextInput style={styles.formInput} placeholder="Full Name *" value={newAddress.fullName} onChangeText={(t) => setNewAddress({...newAddress, fullName: t})} />
-              <TextInput style={styles.formInput} placeholder="Phone Number *" keyboardType="phone-pad" value={newAddress.phone} onChangeText={(t) => setNewAddress({...newAddress, phone: t})} />
-              <TextInput style={styles.formInput} placeholder="Address Line 1 *" value={newAddress.addressLine1} onChangeText={(t) => setNewAddress({...newAddress, addressLine1: t})} />
-              <TextInput style={styles.formInput} placeholder="Address Line 2 (Optional)" value={newAddress.addressLine2} onChangeText={(t) => setNewAddress({...newAddress, addressLine2: t})} />
-              <View style={styles.formRow}>
-                <TextInput style={[styles.formInput, {flex: 1, marginRight: 8}]} placeholder="City *" value={newAddress.city} onChangeText={(t) => setNewAddress({...newAddress, city: t})} />
-                <TextInput style={[styles.formInput, {flex: 1}]} placeholder="State *" value={newAddress.state} onChangeText={(t) => setNewAddress({...newAddress, state: t})} />
-              </View>
-              <TextInput style={styles.formInput} placeholder="Postal Code *" keyboardType="number-pad" maxLength={6} value={newAddress.postalCode} onChangeText={(t) => setNewAddress({...newAddress, postalCode: t})} />
+              <TextInput style={styles.formInput} placeholder="Full Name *" placeholderTextColor="#9CA3AF" value={newAddress.fullName} onChangeText={(t) => setNewAddress({...newAddress, fullName: t})} />
+              <TextInput style={styles.formInput} placeholder="Phone Number *" placeholderTextColor="#9CA3AF" keyboardType="phone-pad" value={newAddress.phone} onChangeText={(t) => setNewAddress({...newAddress, phone: t})} />
+              <TextInput style={styles.formInput} placeholder="Address Line 1 *" placeholderTextColor="#9CA3AF" value={newAddress.addressLine1} onChangeText={(t) => setNewAddress({...newAddress, addressLine1: t})} />
+              <TextInput style={styles.formInput} placeholder="Address Line 2 (Optional)" placeholderTextColor="#9CA3AF" value={newAddress.addressLine2} onChangeText={(t) => setNewAddress({...newAddress, addressLine2: t})} />
+              <TextInput style={styles.formInput} placeholder="Postal Code *" placeholderTextColor="#9CA3AF" keyboardType="number-pad" maxLength={6} value={newAddress.postalCode} onChangeText={(t) => setNewAddress({...newAddress, postalCode: t})} />
               
               {serviceabilityLoading && <Text style={styles.serviceabilityTextChecking}>Checking delivery availability...</Text>}
               {isServiceable === false && <Text style={styles.serviceabilityTextError}>Delivery not available to this PIN code</Text>}
               {isServiceable === true && <Text style={styles.serviceabilityTextSuccess}>Delivery available!</Text>}
+              
+              <View style={styles.formRow}>
+                <TextInput style={[styles.formInput, {flex: 1, marginRight: 8}]} placeholder="City *" placeholderTextColor="#9CA3AF" value={newAddress.city} onChangeText={(t) => setNewAddress({...newAddress, city: t})} />
+                <TextInput style={[styles.formInput, {flex: 1}]} placeholder="State *" placeholderTextColor="#9CA3AF" value={newAddress.state} onChangeText={(t) => setNewAddress({...newAddress, state: t})} />
+              </View>
               {(() => {
                 const isFormValid = newAddress.fullName.trim() !== '' &&
                                     newAddress.phone.trim() !== '' &&

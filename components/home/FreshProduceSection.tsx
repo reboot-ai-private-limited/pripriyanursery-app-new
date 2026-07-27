@@ -14,7 +14,7 @@ export default function FreshProduceSection({ onLoaded }: { onLoaded?: () => voi
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await shopApi.get('/products?limit=10&isPublished=true');
+        const res = await shopApi.get('/products?limit=10&isPublished=true&isActive=true');
         const rawData = res.data?.data || {};
         const rawList = Array.isArray(rawData) ? rawData : (rawData.products || res.data?.products || []);
         

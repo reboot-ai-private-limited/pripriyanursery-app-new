@@ -19,7 +19,7 @@ export default function ProductSection({ title, categorySlug }: ProductSectionPr
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await shopApi.get(`/products/category/${categorySlug}?limit=10`);
+        const res = await shopApi.get(`/products/category/${categorySlug}?limit=10&isActive=true&isPublished=true`);
         const rawData = res.data?.data || {};
         const rawList = Array.isArray(rawData) ? rawData : (rawData.products || res.data?.products || []);
         
