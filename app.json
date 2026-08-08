@@ -10,10 +10,12 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pripriya.nursery"
+      "bundleIdentifier": "com.pripriya.nursery",
+      "buildNumber": "2"
     },
     "android": {
       "package": "com.pripriya.nursery",
+      "versionCode": 2,
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/appIcon.png"
