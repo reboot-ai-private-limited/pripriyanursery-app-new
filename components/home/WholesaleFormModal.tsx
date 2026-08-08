@@ -58,7 +58,7 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
     formData.city.trim() !== '' &&
     formData.pinCode.length === 6 &&
     pinCodeState === 'valid' &&
-    Number(formData.quantity) >= 100 &&
+    Number(formData.quantity) >= 1000 &&
     formData.products.trim() !== '';
 
   const handleSubmit = async () => {
@@ -98,7 +98,7 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
             
             <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
               <Text style={styles.subtitle}>
-                {t('wholesale.subtitle', 'Minimum order quantity is 100 plants.')}
+                {t('wholesale.subtitle', 'Minimum order quantity is 1000 plants.')}
               </Text>
               
               <View style={styles.inputGroup}>
@@ -128,9 +128,9 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('wholesale.quantity', 'Approx. Quantity')} *</Text>
-                <TextInput style={styles.input} value={formData.quantity} onChangeText={t => setFormData(p => ({...p, quantity: t}))} placeholder="e.g. 100" placeholderTextColor="#9CA3AF" keyboardType="number-pad" />
-                {!!formData.quantity && Number(formData.quantity) < 100 && (
-                  <Text style={styles.errorText}>{t('wholesale.minQtyError', 'Minimum quantity is 100')}</Text>
+                <TextInput style={styles.input} value={formData.quantity} onChangeText={t => setFormData(p => ({...p, quantity: t}))} placeholder="e.g. 1000" placeholderTextColor="#9CA3AF" keyboardType="number-pad" />
+                {!!formData.quantity && Number(formData.quantity) < 1000 && (
+                  <Text style={styles.errorText}>{t('wholesale.minQtyError', 'Minimum quantity is 1000')}</Text>
                 )}
               </View>
 

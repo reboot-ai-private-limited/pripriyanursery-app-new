@@ -495,7 +495,7 @@ export default function CheckoutScreen() {
                     <View style={styles.itemHeaderRow}>
                       <View style={{ flex: 1 }}>
                         <TouchableOpacity onPress={() => router.push(`/product/${product.slug || product.id}`)}>
-                          <Text style={styles.itemTitle} numberOfLines={2}>{product.title}</Text>
+                          <Text style={styles.itemTitle} numberOfLines={2}>{product.translations?.[lang]?.title || product.title || (product as any).name}</Text>
                         </TouchableOpacity>
                         
                         {/* Render Specifications / Attributes */}

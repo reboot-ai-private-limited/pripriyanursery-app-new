@@ -90,6 +90,7 @@ export interface Product {
   productId?: string;
   attributes?: Record<string, any>;
   specs?: any[];
+  translations?: Record<string, any>;
 }
 
 export interface GalleryItem {

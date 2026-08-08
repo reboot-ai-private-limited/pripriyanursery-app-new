@@ -6,7 +6,7 @@ const resources = {
     translation: {
     wholesale: {
       title: 'Bulk Order Request',
-      subtitle: 'Minimum order quantity is 100 plants.',
+      subtitle: 'Minimum order quantity is 1000 plants.',
       fullName: 'Full Name',
       mobile: 'Mobile Number',
       pinCode: 'PIN Code',
@@ -23,7 +23,7 @@ const resources = {
       pinError: 'Error verifying PIN Code',
       verifying: 'Verifying...',
       validPin: 'Valid PIN Code',
-      minQtyError: 'Minimum quantity is 100'
+      minQtyError: 'Minimum quantity is 1000'
     },
 
     profile: {
@@ -366,7 +366,7 @@ const resources = {
     translation: {
     wholesale: {
       title: 'थोक आदेश अनुरोध',
-      subtitle: 'न्यूनतम आदेश मात्रा 100 पौधे है।',
+      subtitle: 'न्यूनतम आदेश मात्रा 1000 पौधे है।',
       fullName: 'पूरा नाम',
       mobile: 'मोबाइल नंबर',
       pinCode: 'पिन कोड',
@@ -383,7 +383,7 @@ const resources = {
       pinError: 'पिन कोड सत्यापित करने में त्रुटि',
       verifying: 'सत्यापित कर रहा है...',
       validPin: 'मान्य पिन कोड',
-      minQtyError: 'न्यूनतम मात्रा 100 है'
+      minQtyError: 'न्यूनतम मात्रा 1000 है'
     },
 
     profile: {
@@ -726,7 +726,7 @@ const resources = {
     translation: {
     wholesale: {
       title: 'বাল্ক অর্ডারের অনুরোধ',
-      subtitle: 'ন্যূনতম অর্ডারের পরিমাণ 100 টি গাছপালা।',
+      subtitle: 'ন্যূনতম অর্ডারের পরিমাণ 1000 টি গাছপালা।',
       fullName: 'সম্পূর্ণ নাম',
       mobile: 'মোবাইল নম্বর',
       pinCode: 'পিন কোড',
@@ -743,7 +743,7 @@ const resources = {
       pinError: 'পিন কোড যাচাই করতে ত্রুটি',
       verifying: 'যাচাই করা হচ্ছে...',
       validPin: 'বৈধ পিন কোড',
-      minQtyError: 'ন্যূনতম পরিমাণ 100'
+      minQtyError: 'ন্যূনতম পরিমাণ 1000'
     },
 
     profile: {

@@ -43,7 +43,7 @@ const CartIcon = ({ color }: { color: string }) => (
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { wishlist } = useWishlist();
   const { cart } = useCart();
   const insets = useSafeAreaInsets();
@@ -52,6 +52,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      key={i18n.language}
       screenOptions={{
         tabBarActiveTintColor: '#FFFFFF',
         tabBarInactiveTintColor: 'rgba(255,255,255,0.75)',

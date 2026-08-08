@@ -2,7 +2,7 @@
   "expo": {
     "name": "Pripriya Nursery",
     "slug": "pripriya-app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/appIcon.png",
     "scheme": "pripriyaapp",

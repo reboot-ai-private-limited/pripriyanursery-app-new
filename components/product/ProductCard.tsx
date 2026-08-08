@@ -33,7 +33,7 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
   const cartItemId = product.defaultVariantId || product._id || product.id;
   const cartQty = getCartItemQty(cartItemId);
 
-  const title = product.title || (product as any).name || 'Exotic Nursery Plant';
+  const title = product.translations?.[lang]?.title || product.title || (product as any).name || 'Exotic Nursery Plant';
   const price = product.price || 0;
   const mrp = product.mrp || price;
   const discount = product.discount || (mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0);

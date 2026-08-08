@@ -13,6 +13,7 @@ import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ReviewModal from '@/components/product/ReviewModal';
+import ImageViewing from 'react-native-image-viewing';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -112,7 +113,7 @@ export default function ProductDetailsScreen() {
     ? product.variants[selectedVariantIndex]
     : null;
 
-  const title = selectedVariant?.title || selectedVariant?.name || product.title || product.name || 'Nursery Plant';
+  const title = selectedVariant?.translations?.[lang]?.title || selectedVariant?.title || selectedVariant?.name || product.translations?.[lang]?.title || product.title || product.name || 'Nursery Plant';
   const price = selectedVariant?.price || product.displayPrice || product.price || 0;
   const mrp = selectedVariant?.mrp || product.displayMrp || product.mrp || price;
   const rawDiscount = selectedVariant?.discount?.value || product.displayDiscount;
@@ -418,7 +419,7 @@ export default function ProductDetailsScreen() {
                     >
                       <Image source={{ uri: vImg }} style={styles.variantImage} />
                       <Text style={[styles.variantText, isActive && styles.variantTextActive]} numberOfLines={2}>
-                        {v.title || v.name || `Variant ${idx + 1}`}
+                        {v.translations?.[lang]?.title || v.title || v.name || `Variant ${idx + 1}`}
                       </Text>
                     </TouchableOpacity>
                   );
@@ -584,26 +585,15 @@ export default function ProductDetailsScreen() {
         )}
       </View>
 
-      {/* Fullscreen Image Viewer Modal */}
-      <Modal visible={isImageViewerVisible} transparent={true} onRequestClose={() => setIsImageViewerVisible(false)}>
-        <View style={styles.imageViewerContainer}>
-          <TouchableOpacity style={styles.imageViewerCloseBtn} onPress={() => setIsImageViewerVisible(false)}>
-            <IconSymbol name="xmark" size={28} color="#FFFFFF" />
-          </TouchableOpacity>
-          <ScrollView 
-            horizontal 
-            pagingEnabled 
-            showsHorizontalScrollIndicator={false}
-            contentOffset={{ x: activeImageIndex * SCREEN_WIDTH, y: 0 }}
-          >
-            {images.map((imgUrl, idx) => (
-              <View key={idx} style={{ width: SCREEN_WIDTH, height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                <Image source={{ uri: imgUrl }} style={{ width: SCREEN_WIDTH, height: SCREEN_WIDTH }} contentFit="contain" />
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-      </Modal>
+      {/* Fullscreen Zoomable Image Viewer */}
+      <ImageViewing
+        images={images.map(img => ({ uri: img }))}
+        imageIndex={activeImageIndex}
+        visible={isImageViewerVisible}
+        onRequestClose={() => setIsImageViewerVisible(false)}
+        swipeToCloseEnabled={true}
+        doubleTapToZoomEnabled={true}
+      />
 
       {product?._id && (
         <ReviewModal 

@@ -131,7 +131,7 @@ export default function CartScreen() {
                       <View>
                         <TouchableOpacity onPress={() => router.push(`/product/${item.product.slug || item.product.id}`)}>
                           <Text style={styles.itemTitle} numberOfLines={2}>
-                            {item.product.title}
+                            {item.product.translations?.[lang]?.title || item.product.title || (item.product as any).name}
                           </Text>
                         </TouchableOpacity>
 
