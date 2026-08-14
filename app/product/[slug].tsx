@@ -512,10 +512,14 @@ export default function ProductDetailsScreen() {
                 <RenderHTML
                   contentWidth={SCREEN_WIDTH - 40}
                   source={{ html: product.desc }}
+                  baseStyle={{ fontSize: 14, color: '#4B5563', lineHeight: 22 }}
                   tagsStyles={{
-                    body: { fontSize: 14, color: '#4B5563', lineHeight: 22 },
                     p: { marginVertical: 4 },
-                    span: { fontSize: 14, color: '#4B5563' }
+                    span: { fontSize: 14, color: '#4B5563' },
+                    b: { fontWeight: 'bold' },
+                    strong: { fontWeight: 'bold' },
+                    i: { fontStyle: 'italic' },
+                    em: { fontStyle: 'italic' }
                   }}
                 />
               </View>
