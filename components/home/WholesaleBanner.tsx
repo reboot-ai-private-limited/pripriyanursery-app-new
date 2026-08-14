@@ -17,7 +17,7 @@ export default function WholesaleBanner() {
           style={styles.bannerWrapper}
         >
           <Image
-            source={require('@/assets/images/wholesale.avif')}
+            source={require('@/assets/images/wholesale.jpg')}
             style={styles.image}
             contentFit="cover"
             transition={200}
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   },
   bannerWrapper: {
     width: '100%',
-    height: (width - 32) / 3, // aspect-3/1 roughly, subtracting horizontal padding
+    height: (width - 32) / 2.2, // taller aspect ratio
     borderRadius: 16,
     overflow: 'hidden',
     backgroundColor: '#F3F4F6',

@@ -14,6 +14,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import ReviewModal from '@/components/product/ReviewModal';
 import ImageViewing from 'react-native-image-viewing';
+import RenderHTML from 'react-native-render-html';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -172,9 +173,29 @@ export default function ProductDetailsScreen() {
       specs.push({ label: translateAttribute(key, lang), value: String(value) });
     });
   }
+  
+  const typeTranslations = ['type', 'প্রকার', 'प्रकार'];
+  specs = specs.filter((s: any) => {
+    const lbl = (s.label || s.key || '').toLowerCase().trim();
+    return !typeTranslations.includes(lbl);
+  });
 
-  // Strip HTML from desc
-  const cleanDesc = product.desc ? product.desc.replace(/<[^>]+>/g, '').trim() : '';
+  // Strip HTML from desc but preserve line breaks and decode entities
+  const cleanDesc = product.desc 
+    ? product.desc
+        .replace(/<\/(p|div|li|h[1-6])>/gi, '\n')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, ' ')
+        .replace(/[ \t]+/g, ' ') // Collapse multiple horizontal spaces
+        .replace(/\n\s*\n+/g, '\n') // Collapse multiple newlines into a single newline
+        .trim() 
+    : '';
 
   // Determine if this specific product is wishlisted
   const isWishlisted = product ? isInWishlist(product._id || product.id) : false;
@@ -484,11 +505,21 @@ export default function ProductDetailsScreen() {
           )}
 
           {/* Description */}
-          {cleanDesc ? (
+          {product?.desc ? (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{labels.description || "Description"}</Text>
-              <Text style={styles.descriptionText} numberOfLines={showMoreDesc ? undefined : 3}>{cleanDesc}</Text>
-              {cleanDesc.length > 100 && (
+              <View style={{ overflow: 'hidden', maxHeight: showMoreDesc ? undefined : 66 }}>
+                <RenderHTML
+                  contentWidth={SCREEN_WIDTH - 40}
+                  source={{ html: product.desc }}
+                  tagsStyles={{
+                    body: { fontSize: 14, color: '#4B5563', lineHeight: 22 },
+                    p: { marginVertical: 4 },
+                    span: { fontSize: 14, color: '#4B5563' }
+                  }}
+                />
+              </View>
+              {product.desc.length > 150 && (
                 <TouchableOpacity onPress={() => setShowMoreDesc(!showMoreDesc)} style={styles.showMoreBtn}>
                   <Text style={styles.showMoreText}>{showMoreDesc ? (labels.showLess || "Show Less") : (labels.showMore || "Show More")}</Text>
                 </TouchableOpacity>

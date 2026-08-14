@@ -28,6 +28,23 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
   
   const [pinCodeState, setPinCodeState] = useState<'idle' | 'loading' | 'valid' | 'invalid'>('idle');
   const [pinCodeError, setPinCodeError] = useState('');
+  
+  const [wholesaleProducts, setWholesaleProducts] = useState<{_id: string, name: string}[]>([]);
+  const [showProductDropdown, setShowProductDropdown] = useState(false);
+
+  React.useEffect(() => {
+    const fetchWholesaleProducts = async () => {
+      try {
+        const res = await shopApi.get(`/wholesale-products`);
+        if (res.data?.data) {
+          setWholesaleProducts(res.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch wholesale products", error);
+      }
+    };
+    fetchWholesaleProducts();
+  }, []);
 
   const handlePinCodeChange = async (val: string) => {
     setFormData(prev => ({ ...prev, pinCode: val }));
@@ -134,9 +151,52 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
                 )}
               </View>
 
-              <View style={styles.inputGroup}>
+              <View style={[styles.inputGroup, { zIndex: 10 }]}>
                 <Text style={styles.label}>{t('wholesale.products', 'Interested Products')} *</Text>
-                <TextInput style={styles.input} value={formData.products} onChangeText={t => setFormData(p => ({...p, products: t}))} placeholder="e.g. Mango, Guava plants" placeholderTextColor="#9CA3AF" />
+                <TouchableOpacity 
+                  style={[styles.input, { justifyContent: 'center' }]} 
+                  onPress={() => setShowProductDropdown(!showProductDropdown)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={{ color: formData.products ? '#1F2937' : '#9CA3AF', fontSize: 14 }} numberOfLines={1}>
+                    {formData.products || t('wholesale.selectProduct', 'Select products')}
+                  </Text>
+                  <IconSymbol name={showProductDropdown ? "chevron.up" : "chevron.down"} size={16} color="#6B7280" style={{ position: 'absolute', right: 12 }} />
+                </TouchableOpacity>
+                {showProductDropdown && (
+                  <View style={styles.dropdownContainer}>
+                    <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
+                      {wholesaleProducts.map((product) => {
+                        const isSelected = formData.products.split(', ').includes(product.name);
+                        return (
+                          <TouchableOpacity
+                            key={product._id}
+                            style={[styles.dropdownItem, isSelected && styles.dropdownItemActive]}
+                            onPress={() => {
+                              let current = formData.products ? formData.products.split(', ') : [];
+                              if (isSelected) {
+                                current = current.filter(p => p !== product.name);
+                              } else {
+                                current.push(product.name);
+                              }
+                              setFormData(p => ({ ...p, products: current.join(', ') }));
+                            }}
+                          >
+                            <View style={[styles.checkbox, isSelected && styles.checkboxActive]}>
+                              {isSelected && <IconSymbol name="checkmark" size={12} color="#FFF" />}
+                            </View>
+                            <Text style={[styles.dropdownItemText, isSelected && styles.dropdownItemTextActive]}>{product.name}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                      {wholesaleProducts.length === 0 && (
+                        <View style={styles.dropdownItem}>
+                          <ActivityIndicator size="small" color={BrandColors.primary} />
+                        </View>
+                      )}
+                    </ScrollView>
+                  </View>
+                )}
               </View>
 
               <View style={styles.inputGroup}>
@@ -187,5 +247,13 @@ const styles = StyleSheet.create({
   footer: { padding: 16, borderTopWidth: 1, borderTopColor: '#F3F4F6', backgroundColor: '#FFF' },
   submitBtn: { backgroundColor: BrandColors.primary, height: 48, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   submitBtnDisabled: { opacity: 0.5 },
-  submitBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' }
+  submitBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
+  dropdownContainer: { position: 'absolute', top: 72, left: 0, right: 0, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 4, zIndex: 100 },
+  dropdownScroll: { maxHeight: 200 },
+  dropdownItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  dropdownItemActive: { backgroundColor: '#F0FDF4' },
+  dropdownItemText: { fontSize: 14, color: '#374151' },
+  dropdownItemTextActive: { color: BrandColors.primary, fontWeight: '600' },
+  checkbox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1, borderColor: '#D1D5DB', marginRight: 10, justifyContent: 'center', alignItems: 'center' },
+  checkboxActive: { backgroundColor: BrandColors.primary, borderColor: BrandColors.primary }
 });

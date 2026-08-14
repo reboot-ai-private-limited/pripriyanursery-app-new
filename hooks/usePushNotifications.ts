@@ -60,13 +60,13 @@ export const usePushNotifications = (isAuthenticated: boolean) => {
     requestUserPermission();
 
     // Listen to token refresh
-    const unsubscribeTokenRefresh = messaging().onTokenRefresh(async (fcmToken) => {
+    const unsubscribeTokenRefresh = messaging().onTokenRefresh(async (fcmToken: string) => {
       setToken(fcmToken);
       await sendTokenToBackend(fcmToken);
     });
 
     // Listen for foreground messages and show a banner
-    const unsubscribeOnMessage = messaging().onMessage(async remoteMessage => {
+    const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage: any) => {
       // Create a notification channel for Android
       const channelId = await notifee.createChannel({
         id: 'default',
