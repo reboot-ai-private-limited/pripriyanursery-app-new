@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, TextInput, ActivityIndicator, ScrollView, Alert, KeyboardAvoidingView, Platform, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BrandColors } from '@/constants/theme';
@@ -87,10 +87,27 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
         quantity: Number(formData.quantity)
       });
       if (res.data?.success) {
-        Alert.alert(t('wholesale.success', 'Success'), res.data.message || t('wholesale.successMsg', 'Request submitted successfully!'));
         setFormData({ fullName: '', mobile: '', city: '', pinCode: '', quantity: '', products: '', requirements: '' });
         setPinCodeState('idle');
         onClose();
+
+        // Hand off to WhatsApp so the nursery can reply in a real conversation.
+        // Note: no Linking.canOpenURL guard — on Android 11+ it returns false
+        // unless the target is declared in the manifest's <queries>, which made
+        // this silently fall through to a plain alert instead of opening WhatsApp.
+        const whatsappUrl = res.data?.data?.whatsappUrl;
+        if (whatsappUrl) {
+          try {
+            await Linking.openURL(whatsappUrl);
+          } catch {
+            Alert.alert(
+              t('wholesale.success', 'Success'),
+              t('wholesale.whatsappFailed', 'Request submitted, but WhatsApp could not be opened. Please make sure WhatsApp is installed.')
+            );
+          }
+        } else {
+          Alert.alert(t('wholesale.success', 'Success'), res.data.message || t('wholesale.successMsg', 'Request submitted successfully!'));
+        }
       } else {
         Alert.alert(t('wholesale.error', 'Error'), res.data?.message || t('wholesale.failedMsg', 'Failed to submit request.'));
       }
@@ -151,10 +168,10 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
                 )}
               </View>
 
-              <View style={[styles.inputGroup, { zIndex: 10 }]}>
+              <View style={styles.inputGroup}>
                 <Text style={styles.label}>{t('wholesale.products', 'Interested Products')} *</Text>
-                <TouchableOpacity 
-                  style={[styles.input, { justifyContent: 'center' }]} 
+                <TouchableOpacity
+                  style={[styles.input, { justifyContent: 'center' }]}
                   onPress={() => setShowProductDropdown(!showProductDropdown)}
                   activeOpacity={0.8}
                 >
@@ -165,7 +182,7 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
                 </TouchableOpacity>
                 {showProductDropdown && (
                   <View style={styles.dropdownContainer}>
-                    <ScrollView style={styles.dropdownScroll} nestedScrollEnabled>
+                    <ScrollView style={styles.dropdownScroll} nestedScrollEnabled scrollEnabled>
                       {wholesaleProducts.map((product) => {
                         const isSelected = formData.products.split(', ').includes(product.name);
                         return (
@@ -248,7 +265,7 @@ const styles = StyleSheet.create({
   submitBtn: { backgroundColor: BrandColors.primary, height: 48, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   submitBtnDisabled: { opacity: 0.5 },
   submitBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
-  dropdownContainer: { position: 'absolute', top: 72, left: 0, right: 0, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 4, zIndex: 100 },
+  dropdownContainer: { marginTop: 6, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, overflow: 'hidden' },
   dropdownScroll: { maxHeight: 200 },
   dropdownItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   dropdownItemActive: { backgroundColor: '#F0FDF4' },
