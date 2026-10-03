@@ -11,6 +11,8 @@ import { useTranslation } from 'react-i18next';
 import StorefrontHeader from '@/components/home/StorefrontHeader';
 import Breadcrumbs from '@/components/ui/Breadcrumbs';
 
+const PAGE_SIZE = 20;
+
 export default function CategoryScreen() {
   const insets = useSafeAreaInsets();
   const headerHeight = insets.top + 128;
@@ -24,7 +26,16 @@ export default function CategoryScreen() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const listRef = React.useRef<any>(null);
+  const baseUrlRef = React.useRef('');   // current filters/sort/search, without the page number
+  const pageRef = React.useRef(1);
+  const loadedRef = React.useRef(0);
+  const requestIdRef = React.useRef(0);  // lets us ignore responses that belong to an older filter
   
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryParam || 'all');
   const [sortBy, setSortBy] = useState<string>('popularity');
@@ -41,10 +52,21 @@ export default function CategoryScreen() {
     fetchData();
   }, [selectedCategory, sortBy, search]);
 
+  // Parses either response shape ({ data: { products, total } } or a bare list)
+  const parseProducts = (res: any) => {
+    const rawData = res.data?.data || {};
+    const rawList = Array.isArray(rawData) ? rawData : (rawData.products || res.data?.products || []);
+    const list: Product[] = Array.isArray(rawList) ? rawList.map(mapProduct) : [];
+    const count = Array.isArray(rawData) ? list.length : Number(rawData.total) || list.length;
+    return { list, count };
+  };
+
+  // First page for the current category / sort / search; replaces the list
   const fetchData = async () => {
+    const requestId = ++requestIdRef.current;
     try {
       setLoading(true);
-      
+
       let currentCategories = categories;
       if (currentCategories.length === 0) {
         const catRes = await shopApi.get('/categories');
@@ -54,33 +76,66 @@ export default function CategoryScreen() {
         }
       }
 
-      let url = '/products?limit=100&isActive=true&isPublished=true';
+      let url = `/products?limit=${PAGE_SIZE}&isActive=true&isPublished=true`;
       if (selectedCategory && selectedCategory !== 'all') {
         const cat = currentCategories.find(c => c._id === selectedCategory);
-        const slug = cat ? cat.slug : selectedCategory; 
-        url = `/products/category/${slug}?limit=100&isActive=true&isPublished=true`;
+        const slug = cat ? cat.slug : selectedCategory;
+        url = `/products/category/${slug}?limit=${PAGE_SIZE}&isActive=true&isPublished=true`;
       }
-      
+
+      // Sorting happens on the server so the order stays right across pages
+      if (sortBy !== 'popularity') {
+        url += `&sortBy=${sortBy}`;
+      }
+
       if (search) {
         url += `&search=${encodeURIComponent(search)}`;
       }
-      
-      const prodRes = await shopApi.get(url).catch(() => ({ data: { data: {} } }));
-      const rawData = prodRes.data?.data || {};
-      const rawList = Array.isArray(rawData) ? rawData : (rawData.products || prodRes.data?.products || []);
-      
-      let prods = Array.isArray(rawList) 
-        ? rawList.map(mapProduct)
-        : [];
-      
-      if (sortBy === 'price-asc') prods.sort((a: Product, b: Product) => a.price - b.price);
-      if (sortBy === 'price-desc') prods.sort((a: Product, b: Product) => b.price - a.price);
 
-      setProducts(prods);
+      baseUrlRef.current = url;
+      pageRef.current = 1;
+
+      const prodRes = await shopApi.get(`${url}&page=1`).catch(() => ({ data: { data: {} } }));
+      if (requestId !== requestIdRef.current) return; // the filters changed while this was loading
+
+      const { list, count } = parseProducts(prodRes);
+      loadedRef.current = list.length;
+      setProducts(list);
+      setTotal(count);
+      setHasMore(list.length > 0 && list.length < count);
+      listRef.current?.scrollToOffset?.({ offset: 0, animated: false });
     } catch (err) {
       console.error('Failed to fetch data:', err);
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
+    }
+  };
+
+  // Next page of the same filters, appended when the user scrolls near the end
+  const loadMore = async () => {
+    if (loading || loadingMore || !hasMore) return;
+    const requestId = requestIdRef.current;
+    const nextPage = pageRef.current + 1;
+    try {
+      setLoadingMore(true);
+      const res = await shopApi.get(`${baseUrlRef.current}&page=${nextPage}`);
+      if (requestId !== requestIdRef.current) return; // the filters changed while this was loading
+
+      const { list, count } = parseProducts(res);
+      pageRef.current = nextPage;
+      setTotal(count);
+      // Skip anything already shown (the catalogue can change between page requests)
+      setProducts(prev => {
+        const seen = new Set(prev.map(p => p.id));
+        const fresh = list.filter(p => !seen.has(p.id));
+        loadedRef.current = prev.length + fresh.length;
+        return [...prev, ...fresh];
+      });
+      setHasMore(list.length > 0 && pageRef.current * PAGE_SIZE < count);
+    } catch (err) {
+      console.error('Failed to load more products:', err); // the next scroll to the end retries this page
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -128,7 +183,7 @@ export default function CategoryScreen() {
       </View>
 
       <View style={styles.filterBar}>
-        <Text style={styles.resultsText}>{products.length} {t('common.products', {defaultValue: 'Products'})}</Text>
+        <Text style={styles.resultsText}>{total} {t('common.products', {defaultValue: 'Products'})}</Text>
         <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterModalVisible(true)}>
           <Text style={styles.filterBtnText}>Sort / Filter</Text>
           <IconSymbol name="line.3.horizontal.decrease.circle" size={18} color={BrandColors.primary} />
@@ -142,6 +197,7 @@ export default function CategoryScreen() {
       <StorefrontHeader scrollY={scrollY} />
 
       <Animated.FlatList
+        ref={listRef}
         data={products}
         extraData={{ lang: i18n.language, selectedCategory, sortBy }}
         keyExtractor={(item) => item.id}
@@ -155,6 +211,15 @@ export default function CategoryScreen() {
           { useNativeDriver: false }
         )}
         scrollEventThrottle={16}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color={BrandColors.primary} />
+            </View>
+          ) : null
+        }
         ListHeaderComponent={headerElement}
         ListEmptyComponent={() => (
           !loading && products.length === 0 ? (
@@ -317,6 +382,10 @@ const styles = StyleSheet.create({
   },
   prodListContainer: {
     paddingBottom: 24,
+  },
+  footerLoader: {
+    paddingVertical: 16,
+    alignItems: 'center',
   },
   prodRow: {
     justifyContent: 'space-between',
