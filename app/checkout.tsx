@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { formatNumberByLang } from '@/services/localization';
 import RazorpayCheckout from 'react-native-razorpay';
+import { getDeliveryCharge, FREE_DELIVERY_THRESHOLD } from '@/constants/delivery';
 import { FontAwesome5 } from '@expo/vector-icons';
 
 export default function CheckoutScreen() {
@@ -146,7 +147,7 @@ export default function CheckoutScreen() {
   const totalMRP = cart.reduce((sum, item) => sum + getProductMrp(item.product) * item.quantity, 0);
   const totalPrice = cart.reduce((sum, item) => sum + getProductPrice(item.product) * item.quantity, 0);
   const totalDiscount = totalMRP - totalPrice;
-  const deliveryCharge = 0;
+  const deliveryCharge = getDeliveryCharge(totalPrice);
 
   // 1. Calculate coupon discount
   let couponDiscount = 0;
@@ -669,8 +670,19 @@ export default function CheckoutScreen() {
 
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>{t('cart.deliveryCharge', 'Delivery Charge')}</Text>
-            <Text style={styles.summaryValue}>₹0</Text>
+            {deliveryCharge === 0 ? (
+              <Text style={[styles.summaryValue, { color: BrandColors.primary, fontWeight: '700' }]}>{t('cart.freeDelivery', 'Free')}</Text>
+            ) : (
+              <Text style={styles.summaryValue}>₹{formatNumberByLang(deliveryCharge, lang)}</Text>
+            )}
           </View>
+          {deliveryCharge > 0 && (
+            <Text style={{ fontSize: 12, color: BrandColors.primary, marginBottom: 8 }}>
+              {t('cart.addForFreeDelivery', 'Add {{amount}} more to get free delivery', {
+                amount: '₹' + formatNumberByLang(Math.ceil(FREE_DELIVERY_THRESHOLD - totalPrice), lang),
+              })}
+            </Text>
+          )}
 
           <View style={styles.divider} />
 

@@ -176,7 +176,7 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
                   activeOpacity={0.8}
                 >
                   <Text style={{ color: formData.products ? '#1F2937' : '#9CA3AF', fontSize: 14 }} numberOfLines={1}>
-                    {formData.products || t('wholesale.selectProduct', 'Select products')}
+                    {formData.products || t('wholesale.selectProduct', 'Select a product')}
                   </Text>
                   <IconSymbol name={showProductDropdown ? "chevron.up" : "chevron.down"} size={16} color="#6B7280" style={{ position: 'absolute', right: 12 }} />
                 </TouchableOpacity>
@@ -184,19 +184,15 @@ export default function WholesaleFormModal({ visible, onClose }: WholesaleFormMo
                   <View style={styles.dropdownContainer}>
                     <ScrollView style={styles.dropdownScroll} nestedScrollEnabled scrollEnabled>
                       {wholesaleProducts.map((product) => {
-                        const isSelected = formData.products.split(', ').includes(product.name);
+                        const isSelected = formData.products === product.name;
                         return (
                           <TouchableOpacity
                             key={product._id}
                             style={[styles.dropdownItem, isSelected && styles.dropdownItemActive]}
                             onPress={() => {
-                              let current = formData.products ? formData.products.split(', ') : [];
-                              if (isSelected) {
-                                current = current.filter(p => p !== product.name);
-                              } else {
-                                current.push(product.name);
-                              }
-                              setFormData(p => ({ ...p, products: current.join(', ') }));
+                              // Single choice: picking a product replaces the previous one and closes the list
+                              setFormData(p => ({ ...p, products: product.name }));
+                              setShowProductDropdown(false);
                             }}
                           >
                             <View style={[styles.checkbox, isSelected && styles.checkboxActive]}>
@@ -271,6 +267,6 @@ const styles = StyleSheet.create({
   dropdownItemActive: { backgroundColor: '#F0FDF4' },
   dropdownItemText: { fontSize: 14, color: '#374151' },
   dropdownItemTextActive: { color: BrandColors.primary, fontWeight: '600' },
-  checkbox: { width: 18, height: 18, borderRadius: 4, borderWidth: 1, borderColor: '#D1D5DB', marginRight: 10, justifyContent: 'center', alignItems: 'center' },
+  checkbox: { width: 18, height: 18, borderRadius: 9, borderWidth: 1, borderColor: '#D1D5DB', marginRight: 10, justifyContent: 'center', alignItems: 'center' },
   checkboxActive: { backgroundColor: BrandColors.primary, borderColor: BrandColors.primary }
 });
