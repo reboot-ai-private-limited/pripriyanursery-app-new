@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Share, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, Share, Modal, TextInput, Keyboard } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Image } from 'expo-image';
 import { shopApi } from '@/services/api';
@@ -50,6 +50,10 @@ export default function ProductDetailsScreen() {
   const [userCanReview, setUserCanReview] = useState(false);
   const [userHasReviewed, setUserHasReviewed] = useState(false);
   const [reviewModalVisible, setReviewModalVisible] = useState(false);
+
+  // Pincode / delivery checker
+  const [pincode, setPincode] = useState('');
+  const [serviceStatus, setServiceStatus] = useState({ loading: false, message: '', error: false });
 
   useEffect(() => {
     if (!slug) return;
@@ -213,6 +217,59 @@ export default function ProductDetailsScreen() {
       });
     } catch (error) {
       console.log('Error sharing', error);
+    }
+  };
+
+  const handleCheckPincode = async () => {
+    Keyboard.dismiss();
+    if (pincode.length < 6) {
+      const msg = lang === 'bn' ? 'একটি বৈধ ৬-সংখ্যার পিনকোড লিখুন' : lang === 'hi' ? 'एक वैध 6-अंकीय पिनकोड दर्ज करें' : 'Enter a valid 6-digit pincode';
+      setServiceStatus({ loading: false, message: msg, error: true });
+      return;
+    }
+
+    const checkingMsg = lang === 'bn' ? 'চেক করা হচ্ছে...' : lang === 'hi' ? 'चेक कर रहा है...' : 'Checking...';
+    setServiceStatus({ loading: true, message: checkingMsg, error: false });
+
+    try {
+      // Same store origin pincode the website uses; default weight and no COD.
+      const res = await shopApi.get(`/courier/serviceability?pickup_postcode=741257&delivery_postcode=${pincode}&weight=1&cod=0`);
+
+      if (res.data?.success && res.data?.data?.status === 200) {
+        const payload = res.data?.data?.data || res.data?.data;
+        const couriers = payload?.available_courier_companies;
+        let dateMsg = '';
+
+        const expectedByPrefix = lang === 'bn' ? ' সম্ভাব্য তারিখ ' : lang === 'hi' ? ' संभावित तिथि ' : ' Expected by ';
+        const expectedInPrefix = lang === 'bn' ? ' সম্ভাব্য সময় ' : lang === 'hi' ? ' संभावित समय ' : ' Expected in ';
+        const daysSuffix = lang === 'bn' ? ' দিন।' : lang === 'hi' ? ' दिन।' : ' days.';
+
+        if (Array.isArray(couriers) && couriers.length > 0) {
+          const bestCourier = couriers[0];
+          if (bestCourier.etd) {
+            const dateObj = new Date(bestCourier.etd);
+            if (!isNaN(dateObj.getTime())) {
+              const formattedDate = dateObj.toLocaleDateString(lang === 'bn' ? 'bn-IN' : lang === 'hi' ? 'hi-IN' : 'en-IN', {
+                day: 'numeric', month: 'short',
+              });
+              dateMsg = `${expectedByPrefix}${formattedDate}.`;
+            } else {
+              dateMsg = `${expectedByPrefix}${bestCourier.etd}.`;
+            }
+          } else if (bestCourier.estimated_delivery_days) {
+            const daysNum = formatNumberByLang(bestCourier.estimated_delivery_days, lang);
+            dateMsg = `${expectedInPrefix}${daysNum}${daysSuffix}`;
+          }
+        }
+        const availMsg = lang === 'bn' ? 'ডেলিভারি উপলব্ধ!' : lang === 'hi' ? 'डिलीवरी उपलब्ध है!' : 'Delivery available!';
+        setServiceStatus({ loading: false, message: `${availMsg}${dateMsg}`, error: false });
+      } else {
+        const fallbackErr = lang === 'bn' ? 'দুঃখিত, ডেলিভারি উপলব্ধ নেই।' : lang === 'hi' ? 'क्षमा करें, डिलीवरी उपलब्ध नहीं है।' : 'Sorry, delivery is not available.';
+        setServiceStatus({ loading: false, message: res.data?.data?.message || fallbackErr, error: true });
+      }
+    } catch (err: any) {
+      const fallbackMsg = lang === 'bn' ? 'পিনকোড চেক করতে ত্রুটি' : lang === 'hi' ? 'पिनकोड जांचने में त्रुटि' : 'Error checking pincode';
+      setServiceStatus({ loading: false, message: err.response?.data?.message || fallbackMsg, error: true });
     }
   };
 
@@ -415,6 +472,37 @@ export default function ProductDetailsScreen() {
               </Text>
             </View>
           )}
+
+          {/* Pincode & Delivery */}
+          <View style={styles.pincodeContainer}>
+            <View style={styles.pincodeBox}>
+              <FontAwesome5 name="map-marker-alt" size={15} color="#9CA3AF" style={styles.pincodeIcon} />
+              <TextInput
+                style={styles.pincodeInput}
+                placeholder={labels.enterPincode || 'Enter pin code'}
+                placeholderTextColor="#9CA3AF"
+                value={pincode}
+                onChangeText={(v) => setPincode(v.replace(/\D/g, ''))}
+                keyboardType="number-pad"
+                maxLength={6}
+                returnKeyType="done"
+                onSubmitEditing={handleCheckPincode}
+              />
+              <TouchableOpacity
+                style={[styles.pincodeBtn, serviceStatus.loading && { opacity: 0.7 }]}
+                onPress={handleCheckPincode}
+                disabled={serviceStatus.loading}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.pincodeBtnText}>{serviceStatus.loading ? '...' : (labels.check || 'Check')}</Text>
+              </TouchableOpacity>
+            </View>
+            {!!serviceStatus.message && (
+              <Text style={[styles.pincodeMessage, serviceStatus.error && { color: '#EF4444' }]}>
+                {serviceStatus.message}
+              </Text>
+            )}
+          </View>
 
           {/* Variants Selector */}
           {Array.isArray(product.variants) && product.variants.length > 0 && (
@@ -795,6 +883,49 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     color: '#6B7280',
+  },
+  pincodeContainer: {
+    marginBottom: 16,
+  },
+  pincodeBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 42,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
+  pincodeIcon: {
+    marginLeft: 14,
+    marginRight: 8,
+  },
+  pincodeInput: {
+    flex: 1,
+    height: '100%',
+    fontSize: 14,
+    color: BrandColors.dark,
+    padding: 0,
+  },
+  pincodeBtn: {
+    height: '100%',
+    paddingHorizontal: 20,
+    backgroundColor: BrandColors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pincodeBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  pincodeMessage: {
+    fontSize: 13,
+    fontWeight: '500',
+    marginTop: 8,
+    marginLeft: 4,
+    color: BrandColors.primary,
   },
   price: {
     fontSize: 26,

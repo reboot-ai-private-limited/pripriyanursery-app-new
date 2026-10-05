@@ -48,16 +48,27 @@ export default function StorefrontHeader({ scrollY }: { scrollY?: Animated.Value
   const [isGlobalLoading, setIsGlobalLoading] = useState(false);
 
   const selectLang = async (lang: 'EN' | 'BN' | 'HI') => {
-    setIsGlobalLoading(true);
+    if (isGlobalLoading) return;
     const langCode = lang.toLowerCase();
-    await AsyncStorage.setItem('userLang', langCode);
-    i18n.changeLanguage(langCode);
-    setLangModalVisible(false);
-    
-    // Simulate loading to reflect website's UX
-    setTimeout(() => {
-      setIsGlobalLoading(false);
-    }, 1500);
+    // Same language: just close, nothing to reload.
+    if (langCode === (i18n.language || 'en').toLowerCase()) {
+      setLangModalVisible(false);
+      return;
+    }
+
+    // Stay inside the one language modal and swap its content to a loading view,
+    // instead of closing it and opening a second modal (which flashed both).
+    setIsGlobalLoading(true);
+    try {
+      await AsyncStorage.setItem('userLang', langCode);
+      await i18n.changeLanguage(langCode);
+    } finally {
+      // Brief pause so the new language has rendered before the modal fades out.
+      setTimeout(() => {
+        setLangModalVisible(false);
+        setIsGlobalLoading(false);
+      }, 600);
+    }
   };
 
   return (
@@ -117,12 +128,19 @@ export default function StorefrontHeader({ scrollY }: { scrollY?: Animated.Value
         animationType="fade"
         transparent={true}
         visible={langModalVisible}
-        onRequestClose={() => setLangModalVisible(false)}
+        onRequestClose={() => { if (!isGlobalLoading) setLangModalVisible(false); }}
       >
+        {isGlobalLoading ? (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color={BrandColors.primary} />
+            <Text style={styles.loadingTitle}>Changing language...</Text>
+            <Text style={styles.loadingSubtitle}>Please wait a moment</Text>
+          </View>
+        ) : (
         <Pressable style={styles.modalOverlay} onPress={() => setLangModalVisible(false)}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select Language</Text>
-            
+
             <TouchableOpacity 
               style={[styles.langOption, currentLang === 'EN' && styles.langOptionActive]} 
               onPress={() => selectLang('EN')}
@@ -145,20 +163,7 @@ export default function StorefrontHeader({ scrollY }: { scrollY?: Animated.Value
             </TouchableOpacity>
           </View>
         </Pressable>
-      </Modal>
-
-      {/* Global Loading Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isGlobalLoading}
-        onRequestClose={() => {}}
-      >
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={BrandColors.primary} />
-          <Text style={styles.loadingTitle}>Changing language...</Text>
-          <Text style={styles.loadingSubtitle}>Please wait a moment</Text>
-        </View>
+        )}
       </Modal>
 
       {/* Account Drawer */}

@@ -7,6 +7,11 @@ import { BrandColors } from '@/constants/theme';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 
+// card width (110) + gap (16)
+const ITEM_SIZE = 126;
+// time between automatic one-card advances (was 3500)
+const AUTO_SCROLL_MS = 1500;
+
 export default function CategorySection({ onLoaded }: { onLoaded?: () => void }) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -35,32 +40,53 @@ export default function CategorySection({ onLoaded }: { onLoaded?: () => void })
   }, [t]);
 
   const flatListRef = useRef<FlatList>(null);
-  const currentIdxRef = useRef(0);
-  
+  const offsetRef = useRef(0);
+  const draggingRef = useRef(false);
+  const lastTouchRef = useRef(0);
+
   const extendedCategories = categories.length > 1 ? [...categories, ...categories, ...categories] : categories;
+
+  // Three identical copies are rendered; keep the real scroll offset inside the middle
+  // copy by silently jumping one copy's width (the content looks identical there).
+  const normalizeOffset = () => {
+    const setWidth = categories.length * ITEM_SIZE;
+    let o = offsetRef.current;
+    if (o < setWidth) o += setWidth;
+    else if (o >= setWidth * 2) o -= setWidth;
+    else return;
+    offsetRef.current = o;
+    flatListRef.current?.scrollToOffset({ offset: o, animated: false });
+  };
 
   useEffect(() => {
     if (categories.length <= 1) return;
-    
-    currentIdxRef.current = categories.length;
-    setTimeout(() => {
-      flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
+
+    const setWidth = categories.length * ITEM_SIZE;
+    offsetRef.current = setWidth;
+    const initTimer = setTimeout(() => {
+      flatListRef.current?.scrollToOffset({ offset: setWidth, animated: false });
     }, 100);
 
+    let wrapTimer: ReturnType<typeof setTimeout> | undefined;
     const interval = setInterval(() => {
-      currentIdxRef.current++;
-      flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: true });
-      
-      if (currentIdxRef.current >= categories.length * 2) {
-        setTimeout(() => {
-          if (currentIdxRef.current >= categories.length * 2) {
-            currentIdxRef.current -= categories.length;
-            flatListRef.current?.scrollToIndex({ index: currentIdxRef.current, animated: false });
-          }
-        }, 500);
-      }
-    }, 3500);
-    return () => clearInterval(interval);
+      // Don't fight the user: skip while dragging or shortly after they let go.
+      if (draggingRef.current || Date.now() - lastTouchRef.current < 2500) return;
+
+      // Advance from where the list actually is, not from a stale counter.
+      const next = (Math.round(offsetRef.current / ITEM_SIZE) + 1) * ITEM_SIZE;
+      flatListRef.current?.scrollToOffset({ offset: next, animated: true });
+
+      // Wrap only once the animation has finished, so the jump never interrupts it.
+      wrapTimer = setTimeout(() => {
+        if (!draggingRef.current) normalizeOffset();
+      }, 600);
+    }, AUTO_SCROLL_MS);
+
+    return () => {
+      clearTimeout(initTimer);
+      clearTimeout(wrapTimer);
+      clearInterval(interval);
+    };
   }, [categories.length]);
 
   if (loading) {
@@ -83,7 +109,28 @@ export default function CategorySection({ onLoaded }: { onLoaded?: () => void })
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
         keyExtractor={(item, idx) => `cat-${idx}`}
-        getItemLayout={(data, index) => ({ length: 126, offset: 126 * index, index })}
+        getItemLayout={(data, index) => ({ length: ITEM_SIZE, offset: ITEM_SIZE * index, index })}
+        // Keep every card mounted: the list is short, and unmounting/remounting cards when
+        // the offset jumps is what made images reload and blink.
+        initialNumToRender={extendedCategories.length}
+        windowSize={21}
+        removeClippedSubviews={false}
+        scrollEventThrottle={16}
+        onScroll={(e) => {
+          offsetRef.current = e.nativeEvent.contentOffset.x;
+        }}
+        onScrollBeginDrag={() => {
+          draggingRef.current = true;
+          lastTouchRef.current = Date.now();
+        }}
+        onScrollEndDrag={() => {
+          draggingRef.current = false;
+          lastTouchRef.current = Date.now();
+        }}
+        onMomentumScrollEnd={() => {
+          lastTouchRef.current = Date.now();
+          if (categories.length > 1) normalizeOffset();
+        }}
         renderItem={({ item, index: idx }) => {
           const imgSource = item.imageUrl || item.image || '';
           return (
@@ -98,7 +145,8 @@ export default function CategorySection({ onLoaded }: { onLoaded?: () => void })
                     source={{ uri: imgSource }}
                     style={styles.image}
                     contentFit="cover"
-                    transition={200}
+                    cachePolicy="memory-disk"
+                    transition={0}
                   />
                 ) : (
                   <View style={styles.noImagePlaceholder}>
